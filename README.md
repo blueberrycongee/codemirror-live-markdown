@@ -8,6 +8,8 @@
 
 **⚠️ Work in Progress** - This is an early-stage project. Core functionality is implemented, but more features are coming.
 
+**[🚀 Live Demo](https://codemirror-live-markdown.vercel.app/)** - Try it online!
+
 ## What is this?
 
 A CodeMirror 6 extension that brings Live Preview editing to Markdown:
@@ -17,8 +19,13 @@ A CodeMirror 6 extension that brings Live Preview editing to Markdown:
 
 Inspired by Obsidian's Live Preview mode.
 
+**[Try the live demo →](https://codemirror-live-markdown.vercel.app/)**
+
 ## Demo
 
+**Online:** https://codemirror-live-markdown.vercel.app/
+
+**Local:**
 ```bash
 cd demo
 npm install
