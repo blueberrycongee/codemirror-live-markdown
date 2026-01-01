@@ -16,7 +16,7 @@ import {
 // Initial document content
 const initialDoc = `# Welcome to Live Preview! 🎉
 
-This is a demonstration of **Obsidian-style** Live Preview mode for CodeMirror 6.
+This is a demonstration of **Live Preview** mode for CodeMirror 6, inspired by Obsidian.
 
 ## What is Live Preview?
 

@@ -14,8 +14,8 @@
 
 填写信息：
 ```
-Repository name: codemirror-obsidian-mode
-Description: Obsidian-style Live Preview mode for CodeMirror 6
+Repository name: codemirror-live-markdown
+Description: Live Preview mode for CodeMirror 6 - inspired by Obsidian
 Public ✅
 不要勾选任何初始化选项（README、.gitignore、License）
 ```
@@ -26,7 +26,7 @@ Public ✅
 
 创建后，GitHub 会显示类似这样的 URL：
 ```
-https://github.com/你的用户名/codemirror-obsidian-mode.git
+https://github.com/你的用户名/codemirror-live-markdown.git
 ```
 
 ### 3. 在终端运行以下命令
@@ -35,7 +35,7 @@ https://github.com/你的用户名/codemirror-obsidian-mode.git
 
 ```bash
 # 添加远程仓库
-git remote add origin https://github.com/你的用户名/codemirror-obsidian-mode.git
+git remote add origin https://github.com/你的用户名/codemirror-live-markdown.git
 
 # 推送到 GitHub
 git push -u origin master

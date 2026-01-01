@@ -1,6 +1,6 @@
-# codemirror-obsidian-mode
+# codemirror-live-markdown
 
-> Obsidian-style Live Preview mode for CodeMirror 6
+> Live Preview mode for CodeMirror 6 - inspired by Obsidian
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -8,10 +8,12 @@
 
 ## What is this?
 
-A CodeMirror 6 extension that brings Obsidian's Live Preview mode to your editor:
+A CodeMirror 6 extension that brings Live Preview editing to Markdown:
 - Markdown markers (`**`, `*`, `#`, etc.) hide when you're not editing them
 - Smooth animations when cursor enters/exits formatted text
 - Edit the source directly when needed
+
+Inspired by Obsidian's Live Preview mode.
 
 ## Demo
 
@@ -26,7 +28,7 @@ Open http://localhost:5173 to see it in action.
 ## Installation
 
 ```bash
-npm install codemirror-obsidian-mode
+npm install codemirror-live-markdown
 ```
 
 **Peer dependencies:**
@@ -47,7 +49,7 @@ import {
   collapseOnSelectionFacet,
   editorTheme,
   setMouseSelecting,
-} from 'codemirror-obsidian-mode';
+} from 'codemirror-live-markdown';
 
 const state = EditorState.create({
   doc: '# Hello\n\nThis is **bold** text.',
