@@ -6,20 +6,20 @@
 [![npm downloads](https://img.shields.io/npm/dm/codemirror-live-markdown.svg)](https://www.npmjs.com/package/codemirror-live-markdown)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+English | [简体中文](./README.zh-CN.md)
+
 **⚠️ Work in Progress** - This is an early-stage project. Core functionality is implemented, but more features are coming.
 
 **[🚀 Live Demo](https://codemirror-live-markdown.vercel.app/)** - Try it online!
 
-## What is this?
+## Features
 
-A CodeMirror 6 extension that brings Live Preview editing to Markdown:
-- Markdown markers (`**`, `*`, `#`, etc.) hide when you're not editing them
-- Smooth animations when cursor enters/exits formatted text
-- Edit the source directly when needed
-
-Inspired by Obsidian's Live Preview mode.
-
-**[Try the live demo →](https://codemirror-live-markdown.vercel.app/)**
+- ✨ **Live Preview** - Hide Markdown markers when not editing
+- 🎯 **Smart Display** - Markers smoothly appear when cursor enters, edit directly
+- 🎨 **Smooth Animations** - CSS transitions for a polished experience
+- 📝 **Multiple Elements** - Bold, italic, headers, lists, quotes, and more
+- ⚡ **Performance Optimized** - Position caching, drag selection optimization
+- 🔧 **TypeScript** - Full type definitions included
 
 ## Demo
 
@@ -32,15 +32,15 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173 to see it in action.
+Open http://localhost:5173
 
 ## Installation
 
 ```bash
-npm install codemirror-live-markdown
+npm install codemirror-live-markdown@alpha
 ```
 
-**Peer dependencies:**
+**Peer dependencies required:**
 ```bash
 npm install @codemirror/state @codemirror/view @codemirror/lang-markdown @codemirror/language @lezer/markdown
 ```
@@ -61,7 +61,7 @@ import {
 } from 'codemirror-live-markdown';
 
 const state = EditorState.create({
-  doc: '# Hello\n\nThis is **bold** text.',
+  doc: '# Hello\n\nThis is **bold** and *italic* text.',
   extensions: [
     markdown(),
     collapseOnSelectionFacet.of(true),
@@ -89,13 +89,64 @@ document.addEventListener('mouseup', () => {
 });
 ```
 
-## Current Features
+## How It Works
 
-- ✅ Bold, italic, strikethrough, inline code
-- ✅ Headers (H1-H6)
-- ✅ Lists and quotes
-- ✅ Smooth animations
-- ✅ Drag selection optimization
+The core is the `shouldShowSource(state, from, to)` function that decides whether to show markers based on cursor position:
+
+```
+Document: "Hello **world** test"
+Position:  0     6    13   18
+
+Scenario 1: Cursor at position 5 (after "Hello")
+→ shouldShowSource(state, 6, 15) = false
+→ Hide **, show bold effect
+
+Scenario 2: Cursor at position 10 (inside "world")
+→ shouldShowSource(state, 6, 15) = true
+→ Show **, allow editing
+```
+
+**Animation Techniques:**
+- **Inline Markers** (bold, italic): Use `max-width: 0` → `max-width: 4ch` transition
+- **Block Markers** (headers, lists): Use `fontSize: 0.01em` → `fontSize: 1em` transition
+
+## API
+
+### Extensions
+
+- `livePreviewPlugin` - Main Live Preview plugin
+- `markdownStylePlugin` - Markdown styling (headers, bold, italic, etc.)
+- `editorTheme` - Default theme with animations
+
+### State Management
+
+- `collapseOnSelectionFacet` - Enable/disable Live Preview
+- `mouseSelectingField` - Track drag selection state
+- `setMouseSelecting` - Effect to set drag state
+
+### Utilities
+
+- `shouldShowSource(state, from, to)` - Core decision function
+
+## Customization
+
+Customize colors using CSS variables:
+
+```css
+:root {
+  --foreground: 0 0% 0%;
+  --primary: 221 83% 53%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  --border: 214 32% 91%;
+  
+  /* Markdown-specific */
+  --md-heading: var(--foreground);
+  --md-bold: var(--foreground);
+  --md-italic: var(--foreground);
+  --md-link: var(--primary);
+}
+```
 
 ## Roadmap
 
@@ -111,19 +162,29 @@ See [ROADMAP.md](./ROADMAP.md) for detailed version plan.
 ## Development
 
 ```bash
+# Install dependencies
 npm install
-npm run build    # Build the package
-npm run dev      # Watch mode
-npm test         # Run tests
+
+# Build
+npm run build
+
+# Watch mode
+npm run dev
+
+# Run tests
+npm test
+
+# Lint
+npm run lint
 ```
 
-## How It Works
+## Contributing
 
-The core is the `shouldShowSource(state, from, to)` function that decides whether to show markers or hide them based on cursor position. See [CODEMIRROR_LIVE_PREVIEW_DESIGN.md](./CODEMIRROR_LIVE_PREVIEW_DESIGN.md) for details.
+Contributions are welcome! Please check out the [GitHub Issues](https://github.com/blueberrycongee/codemirror-live-markdown/issues).
 
 ## License
 
-MIT
+MIT © [blueberrycongee](https://github.com/blueberrycongee)
 
 ## Credits
 
