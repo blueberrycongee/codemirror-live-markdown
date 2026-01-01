@@ -2,6 +2,8 @@
 
 > Live Preview mode for CodeMirror 6 - inspired by Obsidian
 
+[![npm version](https://img.shields.io/npm/v/codemirror-live-markdown.svg)](https://www.npmjs.com/package/codemirror-live-markdown)
+[![npm downloads](https://img.shields.io/npm/dm/codemirror-live-markdown.svg)](https://www.npmjs.com/package/codemirror-live-markdown)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **⚠️ Work in Progress** - This is an early-stage project. Core functionality is implemented, but more features are coming.
