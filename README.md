@@ -90,11 +90,14 @@ document.addEventListener('mouseup', () => {
 
 ## Roadmap
 
-- [ ] Math formulas (KaTeX)
-- [ ] Tables
-- [ ] Code blocks with syntax highlighting
-- [ ] Images
-- [ ] Mermaid diagrams
+See [ROADMAP.md](./ROADMAP.md) for detailed version plan.
+
+**Next up:**
+- [ ] v0.2.0-alpha: Math formulas (KaTeX)
+- [ ] v0.3.0-alpha: Tables
+- [ ] v0.4.0-alpha: Code blocks with syntax highlighting
+- [ ] v0.5.0-alpha: Images & Links
+- [ ] v1.0.0: Stable release
 
 ## Development
 
