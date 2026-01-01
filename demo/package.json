@@ -1,0 +1,22 @@
+{
+  "name": "codemirror-obsidian-mode-demo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@codemirror/commands": "^6.3.0",
+    "@codemirror/lang-markdown": "^6.2.0",
+    "@codemirror/language": "^6.10.0",
+    "@codemirror/state": "^6.4.0",
+    "@codemirror/view": "^6.24.0",
+    "@lezer/markdown": "^1.2.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}

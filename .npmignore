@@ -1,0 +1,14 @@
+src/
+.github/
+coverage/
+node_modules/
+*.test.ts
+*.spec.ts
+__tests__/
+.eslintrc.json
+.prettierrc.json
+tsconfig.json
+tsup.config.ts
+vitest.config.ts
+CONTRIBUTING.md
+CODEMIRROR_LIVE_PREVIEW_DESIGN.md

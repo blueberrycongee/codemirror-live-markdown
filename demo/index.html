@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeMirror Obsidian Mode - Demo</title>
+  <style>
+    :root {
+      --foreground: 0 0% 3.9%;
+      --primary: 221.2 83.2% 53.3%;
+      --muted: 210 40% 96.1%;
+      --muted-foreground: 215.4 16.3% 46.9%;
+      --border: 214.3 31.8% 91.4%;
+      --md-heading: var(--foreground);
+      --md-bold: var(--foreground);
+      --md-italic: var(--foreground);
+      --md-link: var(--primary);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      background: white;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background: #f5f5f5;
+      border-color: #999;
+    }
+
+    button.active {
+      background: hsl(var(--primary));
+      color: white;
+      border-color: hsl(var(--primary));
+    }
+
+    #editor {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: white;
+      min-height: 600px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .info {
+      margin-top: 20px;
+      padding: 15px;
+      background: #e3f2fd;
+      border-left: 4px solid hsl(var(--primary));
+      border-radius: 4px;
+      font-size: 14px;
+      color: #1565c0;
+    }
+
+    .info strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>CodeMirror Obsidian Mode</h1>
+      <p class="subtitle">Live Preview Demo - Move your cursor into formatted text to see the magic ✨</p>
+    </header>
+
+    <div class="controls">
+      <button id="liveBtn" class="active">Live Preview</button>
+      <button id="sourceBtn">Source Mode</button>
+    </div>
+
+    <div id="editor"></div>
+
+    <div class="info">
+      <strong>💡 Try this:</strong>
+      Move your cursor into the bold or italic text above. Watch the markers smoothly appear!
+    </div>
+  </div>
+
+  <script type="module" src="/main.js"></script>
+</body>
+</html>
