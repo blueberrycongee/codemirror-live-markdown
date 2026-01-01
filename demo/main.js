@@ -3,7 +3,7 @@ import { EditorView, keymap } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 
-// Import from parent package (using relative path for local development)
+// Import from npm package
 import {
   livePreviewPlugin,
   markdownStylePlugin,
@@ -11,7 +11,7 @@ import {
   collapseOnSelectionFacet,
   editorTheme,
   setMouseSelecting,
-} from '../src/index.ts';
+} from 'codemirror-live-markdown';
 
 // Initial document content
 const initialDoc = `# Welcome to Live Preview! 🎉
