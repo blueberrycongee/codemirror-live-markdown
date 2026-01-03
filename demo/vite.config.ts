@@ -11,7 +11,7 @@ export default defineConfig({
   resolve: {
     alias: {
       'codemirror-live-markdown': path.resolve(__dirname, '../dist/index.js'),
-      // 确保所有 @codemirror/* 包使用同一个实例
+      // Ensure all @codemirror/* packages use the same instance
       '@codemirror/state': path.resolve(__dirname, 'node_modules/@codemirror/state'),
       '@codemirror/view': path.resolve(__dirname, 'node_modules/@codemirror/view'),
       '@codemirror/language': path.resolve(__dirname, 'node_modules/@codemirror/language'),

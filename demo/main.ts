@@ -132,7 +132,7 @@ const state = EditorState.create({
 // Create editor view
 const view = new EditorView({
   state,
-  parent: document.getElementById('editor'),
+  parent: document.getElementById('editor')!,
 });
 
 // Setup drag selection detection
@@ -147,8 +147,8 @@ document.addEventListener('mouseup', () => {
 });
 
 // Mode switching buttons
-const liveBtn = document.getElementById('liveBtn');
-const sourceBtn = document.getElementById('sourceBtn');
+const liveBtn = document.getElementById('liveBtn')!;
+const sourceBtn = document.getElementById('sourceBtn')!;
 
 liveBtn.addEventListener('click', () => {
   view.dispatch({
