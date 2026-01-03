@@ -3,7 +3,7 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     globals: true,
-    environment: 'node', // Use node instead of jsdom - we don't need DOM for these tests
+    environment: 'jsdom', // Use jsdom for DOM-dependent tests (ViewPlugin, etc.)
     exclude: ['node_modules', 'dist', 'demo', 'ProseMark'],
     coverage: {
       provider: 'v8',
