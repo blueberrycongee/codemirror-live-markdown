@@ -19,6 +19,7 @@ import { EditorState, Range, StateField } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate } from '@codemirror/view';
 import { shouldShowSource } from '../core/shouldShowSource';
 import { mouseSelectingField } from '../core/mouseSelecting';
+import { checkUpdateAction } from '../core/pluginUpdateHelper';
 import { createMathWidget } from '../widgets/mathWidget';
 
 /**
@@ -35,26 +36,7 @@ export const mathPlugin = ViewPlugin.fromClass(
     }
 
     update(update: ViewUpdate) {
-      if (
-        update.docChanged ||
-        update.viewportChanged ||
-        update.transactions.some((t) => t.reconfigured)
-      ) {
-        this.decorations = this.build(update.view);
-        return;
-      }
-
-      const isDragging = update.state.field(mouseSelectingField, false);
-      const wasDragging = update.startState.field(mouseSelectingField, false);
-
-      if (wasDragging && !isDragging) {
-        this.decorations = this.build(update.view);
-        return;
-      }
-
-      if (isDragging) return;
-
-      if (update.selectionSet) {
+      if (checkUpdateAction(update) === 'rebuild') {
         this.decorations = this.build(update.view);
       }
     }

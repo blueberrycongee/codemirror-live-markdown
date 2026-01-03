@@ -3,6 +3,7 @@ import { Range } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate } from '@codemirror/view';
 import { shouldShowSource } from '../core/shouldShowSource';
 import { mouseSelectingField } from '../core/mouseSelecting';
+import { checkUpdateAction } from '../core/pluginUpdateHelper';
 
 /**
  * Live Preview 插件
@@ -23,31 +24,7 @@ export const livePreviewPlugin = ViewPlugin.fromClass(
     }
 
     update(update: ViewUpdate) {
-      // 文档变化或视口变化：必须重建
-      if (
-        update.docChanged ||
-        update.viewportChanged ||
-        update.transactions.some((t) => t.reconfigured)
-      ) {
-        this.decorations = this.build(update.view);
-        return;
-      }
-
-      // 拖动状态变化
-      const isDragging = update.state.field(mouseSelectingField, false);
-      const wasDragging = update.startState.field(mouseSelectingField, false);
-
-      // 刚结束拖动：重建
-      if (wasDragging && !isDragging) {
-        this.decorations = this.build(update.view);
-        return;
-      }
-
-      // 正在拖动：跳过
-      if (isDragging) return;
-
-      // 普通选择变化：重建
-      if (update.selectionSet) {
+      if (checkUpdateAction(update) === 'rebuild') {
         this.decorations = this.build(update.view);
       }
     }

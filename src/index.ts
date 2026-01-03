@@ -10,6 +10,8 @@
 export { collapseOnSelectionFacet } from './core/facets';
 export { mouseSelectingField, setMouseSelecting } from './core/mouseSelecting';
 export { shouldShowSource } from './core/shouldShowSource';
+export { checkUpdateAction } from './core/pluginUpdateHelper';
+export type { UpdateAction } from './core/pluginUpdateHelper';
 
 // Plugins
 export { livePreviewPlugin } from './plugins/livePreview';
