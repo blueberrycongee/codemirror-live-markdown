@@ -1,6 +1,6 @@
 {
   "name": "codemirror-live-markdown",
-  "version": "0.1.0-alpha.1",
+  "version": "0.2.0-alpha.1",
   "description": "Live Preview mode for CodeMirror 6 - inspired by Obsidian",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -52,6 +52,11 @@
     "@codemirror/state": "^6.4.0",
     "@codemirror/view": "^6.24.0",
     "@lezer/markdown": "^1.2.0"
+  },
+  "peerDependenciesMeta": {
+    "katex": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

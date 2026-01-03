@@ -7,6 +7,8 @@ import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import {
   livePreviewPlugin,
   markdownStylePlugin,
+  mathPlugin,
+  blockMathField,
   mouseSelectingField,
   collapseOnSelectionFacet,
   editorTheme,
@@ -32,6 +34,27 @@ Move your cursor into any of these formatted elements:
 - *Italic text* - The \`*\` markers slide in
 - ~~Strikethrough~~ - The \`~~\` markers show up
 - \`inline code\` - The backticks become visible
+
+### Math Formulas ✨
+
+**Inline math:** The famous equation \`$E = mc^2$\` shows energy-mass equivalence.
+
+**Block math:**
+
+\`\`\`math
+\\int_0^\\infty e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}
+\`\`\`
+
+**More examples:**
+
+- Pythagorean theorem: \`$a^2 + b^2 = c^2$\`
+- Quadratic formula: \`$x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$\`
+
+\`\`\`math
+\\sum_{n=1}^{\\infty} \\frac{1}{n^2} = \\frac{\\pi^2}{6}
+\`\`\`
+
+Click on any formula to edit it!
 
 ### How does it work?
 
@@ -69,6 +92,7 @@ This is built with:
 - **CodeMirror 6** - Modern code editor
 - **Custom ViewPlugins** - For the Live Preview logic
 - **CSS Animations** - Smooth transitions using \`max-width\` and \`fontSize\`
+- **KaTeX** - Beautiful math rendering
 
 The core mechanism is the \`shouldShowSource()\` function that checks if the cursor intersects with a formatted element.
 
@@ -96,6 +120,8 @@ const state = EditorState.create({
       mouseSelectingField,
       livePreviewPlugin,
       markdownStylePlugin,
+      mathPlugin,
+      blockMathField,
     ]),
 
     // Theme
@@ -131,6 +157,8 @@ liveBtn.addEventListener('click', () => {
       mouseSelectingField,
       livePreviewPlugin,
       markdownStylePlugin,
+      mathPlugin,
+      blockMathField,
     ]),
   });
   liveBtn.classList.add('active');

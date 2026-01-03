@@ -1,5 +1,42 @@
 # 🗺️ Roadmap
 
+## 🎯 Project Philosophy
+
+**codemirror-live-markdown** is a **composable plugin collection** for adding Obsidian-style Live Preview to CodeMirror 6.
+
+### Design Principles
+
+1. **Modular by Design** - Each feature is a separate plugin you can import independently
+2. **Zero Forced Dependencies** - Only install what you need (math? tables? your choice)
+3. **Flexible Integration** - Works alongside any other CodeMirror extensions
+4. **Simple API** - Direct plugin imports, no complex configuration system
+
+### How It Differs from Similar Projects
+
+Unlike editor frameworks (e.g., ProseMark) that provide an all-in-one setup, this project gives you building blocks:
+
+```typescript
+// Framework approach: all-or-nothing
+prosemarkBasicSetup()  // includes everything
+
+// Our approach: pick what you need
+import { livePreviewPlugin, mathPlugin, tablePlugin } from 'codemirror-live-markdown';
+
+extensions: [
+  livePreviewPlugin,
+  mathPlugin({ inline: true }),  // configurable
+  // tablePlugin,  // don't need tables? don't import it
+]
+```
+
+**Best for:**
+- Adding Live Preview to an existing CodeMirror editor
+- Projects that need fine-grained control over features
+- Minimizing bundle size by only including used features
+- Developers who prefer explicit over implicit configuration
+
+---
+
 ## Version Strategy
 
 We follow [Semantic Versioning](https://semver.org/):
@@ -33,23 +70,24 @@ npm install codemirror-live-markdown@alpha
 
 ---
 
-### 🚧 v0.2.0-alpha.1 (Next)
+### ✅ v0.2.0-alpha.1 (Current)
 **ETA:** 1-2 weeks  
 **Focus:** Math formulas
 
-**Planned Features:**
-- [ ] Inline math: `$E = mc^2$`
-- [ ] Block math: `$$...$$`
-- [ ] KaTeX rendering
-- [ ] Edit-time preview panel
-- [ ] Formula caching for performance
-- [ ] Click to edit
+**Features:**
+- ✅ Inline math: `$E = mc^2$`
+- ✅ Block math: ` ```math ... ``` `
+- ✅ KaTeX rendering
+- ✅ Edit mode with source highlighting
+- ✅ Formula caching for performance
+- ✅ Click to edit
+- ✅ Error handling for invalid LaTeX
 
 **Breaking Changes:** None
 
 ---
 
-### 🔮 v0.3.0-alpha.1
+### 🔮 v0.3.0-alpha.1 (Next)
 **ETA:** 2-3 weeks  
 **Focus:** Tables
 
@@ -161,8 +199,8 @@ npm install codemirror-live-markdown@alpha
 
 | Version | Status | Features | Stability | Recommended For |
 |---------|--------|----------|-----------|-----------------|
-| 0.1.x-alpha | 🟡 Testing | Basic | Low | Early adopters, testing |
-| 0.2.x-alpha | 🔵 Planned | + Math | Low | Math-heavy users |
+| 0.1.x-alpha | ✅ Released | Basic | Low | Early adopters, testing |
+| 0.2.x-alpha | 🟢 Current | + Math | Low | Math-heavy users |
 | 0.3.x-alpha | 🔵 Planned | + Tables | Low | Documentation |
 | 0.4.x-alpha | 🔵 Planned | + Code | Low | Technical writing |
 | 0.5.x-alpha | 🔵 Planned | + Images | Low | Rich content |
@@ -188,4 +226,4 @@ Want to help? Check out:
 
 ---
 
-**Last Updated:** 2026-01-02
+**Last Updated:** 2026-01-03

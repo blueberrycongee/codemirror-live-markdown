@@ -18,6 +18,7 @@ English | [简体中文](./README.zh-CN.md)
 - 🎯 **Smart Display** - Markers smoothly appear when cursor enters, edit directly
 - 🎨 **Smooth Animations** - CSS transitions for a polished experience
 - 📝 **Multiple Elements** - Bold, italic, headers, lists, quotes, and more
+- 🧮 **Math Formulas** - KaTeX rendering for inline and block math (v0.2.0+)
 - ⚡ **Performance Optimized** - Position caching, drag selection optimization
 - 🔧 **TypeScript** - Full type definitions included
 
@@ -45,6 +46,11 @@ npm install codemirror-live-markdown@alpha
 npm install @codemirror/state @codemirror/view @codemirror/lang-markdown @codemirror/language @lezer/markdown
 ```
 
+**Optional: For math formula support (v0.2.0+):**
+```bash
+npm install katex
+```
+
 ## Quick Start
 
 ```typescript
@@ -54,6 +60,8 @@ import { markdown } from '@codemirror/lang-markdown';
 import {
   livePreviewPlugin,
   markdownStylePlugin,
+  mathPlugin,
+  blockMathField,
   mouseSelectingField,
   collapseOnSelectionFacet,
   editorTheme,
@@ -68,6 +76,8 @@ const state = EditorState.create({
     mouseSelectingField,
     livePreviewPlugin,
     markdownStylePlugin,
+    mathPlugin,      // Optional: Inline math support
+    blockMathField,  // Optional: Block math support
     editorTheme,
   ],
 });
@@ -116,6 +126,8 @@ Scenario 2: Cursor at position 10 (inside "world")
 
 - `livePreviewPlugin` - Main Live Preview plugin
 - `markdownStylePlugin` - Markdown styling (headers, bold, italic, etc.)
+- `mathPlugin` - Inline math formula rendering (requires KaTeX)
+- `blockMathField` - Block math formula rendering (requires KaTeX)
 - `editorTheme` - Default theme with animations
 
 ### State Management
@@ -127,6 +139,37 @@ Scenario 2: Cursor at position 10 (inside "world")
 ### Utilities
 
 - `shouldShowSource(state, from, to)` - Core decision function
+- `renderMath(source, displayMode)` - Render math formula with KaTeX
+- `clearMathCache()` - Clear math rendering cache
+
+## Math Formulas (v0.2.0+)
+
+**Inline math:** Use backtick-dollar syntax
+```markdown
+The equation `$E = mc^2$` is famous.
+```
+
+**Block math:** Use fenced code block with `math` language
+````markdown
+```math
+\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
+```
+````
+
+**Requirements:**
+1. Install KaTeX: `npm install katex`
+2. Include KaTeX CSS in your HTML:
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+```
+3. Add `mathPlugin` and `blockMathField` to your extensions
+
+**Features:**
+- Click rendered formula to edit
+- Smooth transition between render and edit modes
+- Error handling for invalid LaTeX
+- Rendering cache for performance
 
 ## Customization
 
@@ -153,7 +196,7 @@ Customize colors using CSS variables:
 See [ROADMAP.md](./ROADMAP.md) for detailed version plan.
 
 **Next up:**
-- [ ] v0.2.0-alpha: Math formulas (KaTeX)
+- [x] v0.2.0-alpha: Math formulas (KaTeX) ✅
 - [ ] v0.3.0-alpha: Tables
 - [ ] v0.4.0-alpha: Code blocks with syntax highlighting
 - [ ] v0.5.0-alpha: Images & Links

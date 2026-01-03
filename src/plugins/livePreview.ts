@@ -83,6 +83,18 @@ export const livePreviewPlugin = ViewPlugin.fromClass(
 
           if (!markTypes.includes(node.name)) return;
 
+          // 跳过数学公式的 CodeMark（由 mathPlugin 处理）
+          if (node.name === 'CodeMark') {
+            const parent = node.node.parent;
+            if (parent && parent.name === 'InlineCode') {
+              const text = state.doc.sliceString(parent.from, parent.to);
+              // 如果是数学公式格式 `$...$`，跳过
+              if (text.startsWith('`$') && text.endsWith('$`')) {
+                return;
+              }
+            }
+          }
+
           const isBlock = ['HeaderMark', 'ListMark', 'QuoteMark'].includes(node.name);
           const lineNum = state.doc.lineAt(node.from).number;
           const isActiveLine = activeLines.has(lineNum);

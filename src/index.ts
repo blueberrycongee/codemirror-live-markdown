@@ -14,9 +14,13 @@ export { shouldShowSource } from './core/shouldShowSource';
 // Plugins
 export { livePreviewPlugin } from './plugins/livePreview';
 export { markdownStylePlugin } from './plugins/markdownStyle';
+export { mathPlugin, blockMathField } from './plugins/math';
 
 // Theme
 export { editorTheme } from './theme/default';
+
+// Utils
+export { renderMath, clearMathCache } from './utils/mathCache';
 
 // Re-export types from CodeMirror for convenience
 export type { Extension } from '@codemirror/state';

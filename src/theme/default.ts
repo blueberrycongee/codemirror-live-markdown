@@ -162,11 +162,12 @@ export const editorTheme = EditorView.theme({
     color: 'hsl(var(--foreground))',
     fontFamily: "'JetBrains Mono', monospace",
     borderRadius: '4px',
-    padding: '2px 4px',
-    zIndex: '1',
-    position: 'relative',
+    padding: '2px 0',
     cursor: 'text',
     animation: 'mathFadeIn 0.15s ease-out',
+  },
+  '.cm-math-source-block': {
+    backgroundColor: 'rgba(74, 222, 128, 0.15)',
   },
   '.cm-math-preview-panel': {
     display: 'block',

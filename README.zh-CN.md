@@ -18,6 +18,7 @@
 - 🎯 **智能显示** - 光标进入时平滑展开标记，可直接编辑
 - 🎨 **流畅动画** - CSS 过渡动画，体验丝滑
 - 📝 **多种元素** - 支持加粗、斜体、标题、列表、引用等
+- 🧮 **数学公式** - KaTeX 渲染行内和块级数学公式（v0.2.0+）
 - ⚡ **性能优化** - 位置缓存、拖拽选择优化
 - 🔧 **TypeScript** - 完整的类型定义
 
@@ -45,6 +46,11 @@ npm install codemirror-live-markdown@alpha
 npm install @codemirror/state @codemirror/view @codemirror/lang-markdown @codemirror/language @lezer/markdown
 ```
 
+**可选：数学公式支持（v0.2.0+）：**
+```bash
+npm install katex
+```
+
 ## 快速开始
 
 ```typescript
@@ -54,6 +60,8 @@ import { markdown } from '@codemirror/lang-markdown';
 import {
   livePreviewPlugin,
   markdownStylePlugin,
+  mathPlugin,
+  blockMathField,
   mouseSelectingField,
   collapseOnSelectionFacet,
   editorTheme,
@@ -68,6 +76,8 @@ const state = EditorState.create({
     mouseSelectingField,
     livePreviewPlugin,
     markdownStylePlugin,
+    mathPlugin,      // 可选：行内数学公式支持
+    blockMathField,  // 可选：块级数学公式支持
     editorTheme,
   ],
 });
@@ -116,6 +126,7 @@ document.addEventListener('mouseup', () => {
 
 - `livePreviewPlugin` - 主实时预览插件
 - `markdownStylePlugin` - Markdown 样式（标题、粗体、斜体等）
+- `mathPlugin` - 数学公式渲染（需要 KaTeX）
 - `editorTheme` - 带动画的默认主题
 
 ### 状态管理
@@ -127,6 +138,37 @@ document.addEventListener('mouseup', () => {
 ### 工具函数
 
 - `shouldShowSource(state, from, to)` - 核心判断函数
+- `renderMath(source, displayMode)` - 使用 KaTeX 渲染数学公式
+- `clearMathCache()` - 清空数学公式渲染缓存
+
+## 数学公式（v0.2.0+）
+
+**行内公式：** 使用反引号-美元符号语法
+```markdown
+著名的方程 `$E = mc^2$` 表示质能等价。
+```
+
+**块级公式：** 使用 `math` 语言的代码块
+````markdown
+```math
+\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
+```
+````
+
+**使用要求：**
+1. 安装 KaTeX：`npm install katex`
+2. 在 HTML 中引入 KaTeX CSS：
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+```
+3. 在扩展中添加 `mathPlugin`
+
+**功能特性：**
+- 点击渲染结果进入编辑模式
+- 渲染和编辑模式之间平滑过渡
+- 无效 LaTeX 的错误处理
+- 渲染缓存提升性能
 
 ## 自定义样式
 
@@ -153,7 +195,7 @@ document.addEventListener('mouseup', () => {
 查看 [ROADMAP.md](./ROADMAP.md) 了解详细的版本计划。
 
 **即将推出：**
-- [ ] v0.2.0-alpha: 数学公式（KaTeX）
+- [x] v0.2.0-alpha: 数学公式（KaTeX）✅
 - [ ] v0.3.0-alpha: 表格
 - [ ] v0.4.0-alpha: 代码块语法高亮
 - [ ] v0.5.0-alpha: 图片和链接
