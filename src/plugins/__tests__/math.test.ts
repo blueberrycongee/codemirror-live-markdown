@@ -124,7 +124,7 @@ describe('mathPlugin', () => {
       const plugin = view.plugin(mathPlugin);
       
       let hasSourceClass = false;
-      plugin?.decorations.between(0, view.state.doc.length, (from, to, deco) => {
+      plugin?.decorations.between(0, view.state.doc.length, (_from, _to, deco) => {
         const spec = deco.spec as { class?: string };
         if (spec.class?.includes('cm-math-source')) {
           hasSourceClass = true;
@@ -213,7 +213,7 @@ describe('mathPlugin', () => {
       const decos = view.state.field(blockMathField);
       
       let hasSourceClass = false;
-      decos.between(0, view.state.doc.length, (from, to, deco) => {
+      decos.between(0, view.state.doc.length, (_from, _to, deco) => {
         const spec = deco.spec as { class?: string };
         if (spec.class?.includes('cm-math-source-block')) {
           hasSourceClass = true;
