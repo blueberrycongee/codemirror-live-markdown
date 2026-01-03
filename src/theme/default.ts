@@ -1,17 +1,17 @@
 import { EditorView } from '@codemirror/view';
 
 /**
- * 默认主题定义
- * 
- * 包含：
- * - 行内标记动画（max-width 过渡）
- * - 块级标记动画（fontSize 过渡）
- * - Markdown 样式（标题、粗体、斜体等）
- * - 数学公式样式
- * - 表格样式
+ * Default theme definition
+ *
+ * Includes:
+ * - Inline mark animations (max-width transition)
+ * - Block mark animations (fontSize transition)
+ * - Markdown styles (headings, bold, italic, etc.)
+ * - Math formula styles
+ * - Table styles
  */
 export const editorTheme = EditorView.theme({
-  // ========== 基础样式 ==========
+  // ========== Base Styles ==========
   '&': {
     backgroundColor: 'transparent',
     fontSize: '16px',
@@ -21,7 +21,7 @@ export const editorTheme = EditorView.theme({
   '.cm-content': {
     fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     padding: '16px 0',
-    caretColor: 'hsl(var(--primary))',
+    caretColor: 'hsl(var(--primary, 220 90% 56%))',
   },
 
   '.cm-line': {
@@ -30,7 +30,7 @@ export const editorTheme = EditorView.theme({
     position: 'relative',
   },
 
-  // ========== 选区样式 ==========
+  // ========== Selection Styles ==========
   '.cm-selectionBackground': {
     backgroundColor: 'rgba(191, 219, 254, 0.25) !important',
   },
@@ -38,7 +38,7 @@ export const editorTheme = EditorView.theme({
     backgroundColor: 'rgba(191, 219, 254, 0.35) !important',
   },
 
-  // ========== 行内标记动画 ==========
+  // ========== Inline Mark Animation ==========
   '.cm-formatting-inline': {
     display: 'inline-flex',
     alignItems: 'center',
@@ -46,7 +46,7 @@ export const editorTheme = EditorView.theme({
     overflow: 'hidden',
     whiteSpace: 'nowrap',
     verticalAlign: 'baseline',
-    color: 'hsl(var(--muted-foreground) / 0.6)',
+    color: 'hsl(var(--muted-foreground, 220 9% 46%) / 0.6)',
     fontFamily: "'JetBrains Mono', monospace",
     fontSize: '0.85em',
     maxWidth: '0',
@@ -68,14 +68,14 @@ export const editorTheme = EditorView.theme({
     pointerEvents: 'auto',
   },
 
-  // ========== 块级标记动画 ==========
+  // ========== Block Mark Animation ==========
   '.cm-formatting-block': {
     display: 'inline',
     overflow: 'hidden',
     fontSize: '0.01em',
     lineHeight: 'inherit',
     opacity: '0',
-    color: 'hsl(var(--muted-foreground))',
+    color: 'hsl(var(--muted-foreground, 220 9% 46%))',
     fontFamily: "'JetBrains Mono', monospace",
     transition: 'font-size 0.2s ease-out, opacity 0.2s ease-out',
   },
@@ -85,55 +85,55 @@ export const editorTheme = EditorView.theme({
     opacity: '0.6',
   },
 
-  // ========== 标题样式 ==========
+  // ========== Heading Styles ==========
   '.cm-header-1': {
     fontSize: '2em',
     fontWeight: '700',
     lineHeight: '1.3',
-    color: 'hsl(var(--md-heading, var(--foreground)))',
+    color: 'hsl(var(--md-heading, var(--foreground, 220 9% 9%)))',
   },
   '.cm-header-2': {
     fontSize: '1.5em',
     fontWeight: '600',
     lineHeight: '1.4',
-    color: 'hsl(var(--md-heading, var(--foreground)))',
+    color: 'hsl(var(--md-heading, var(--foreground, 220 9% 9%)))',
   },
   '.cm-header-3': {
     fontSize: '1.25em',
     fontWeight: '600',
     lineHeight: '1.5',
-    color: 'hsl(var(--md-heading, var(--foreground)))',
+    color: 'hsl(var(--md-heading, var(--foreground, 220 9% 9%)))',
   },
   '.cm-header-4, .cm-header-5, .cm-header-6': {
     fontWeight: '600',
-    color: 'hsl(var(--md-heading, var(--foreground)))',
+    color: 'hsl(var(--md-heading, var(--foreground, 220 9% 9%)))',
   },
 
-  // ========== 行内样式 ==========
+  // ========== Inline Styles ==========
   '.cm-strong': {
     fontWeight: '700',
-    color: 'hsl(var(--md-bold, var(--foreground)))',
+    color: 'hsl(var(--md-bold, var(--foreground, 220 9% 9%)))',
   },
   '.cm-emphasis': {
     fontStyle: 'italic',
-    color: 'hsl(var(--md-italic, var(--foreground)))',
+    color: 'hsl(var(--md-italic, var(--foreground, 220 9% 9%)))',
   },
   '.cm-strikethrough': {
     textDecoration: 'line-through',
-    color: 'hsl(var(--muted-foreground))',
+    color: 'hsl(var(--muted-foreground, 220 9% 46%))',
   },
   '.cm-code': {
-    backgroundColor: 'hsl(var(--muted))',
+    backgroundColor: 'hsl(var(--muted, 220 14% 96%))',
     padding: '2px 4px',
     borderRadius: '3px',
     fontFamily: 'monospace',
   },
   '.cm-link': {
-    color: 'hsl(var(--md-link, var(--primary)))',
+    color: 'hsl(var(--md-link, var(--primary, 220 90% 56%)))',
     textDecoration: 'underline',
   },
   '.cm-wikilink': {
-    color: 'hsl(var(--primary))',
+    color: 'hsl(var(--primary, 220 90% 56%))',
     textDecoration: 'underline',
     cursor: 'pointer',
   },
@@ -143,7 +143,7 @@ export const editorTheme = EditorView.theme({
     borderRadius: '2px',
   },
 
-  // ========== 数学公式样式 ==========
+  // ========== Math Formula Styles ==========
   '.cm-math-inline': {
     display: 'inline-block',
     verticalAlign: 'middle',
@@ -159,7 +159,7 @@ export const editorTheme = EditorView.theme({
   },
   '.cm-math-source': {
     backgroundColor: 'rgba(74, 222, 128, 0.15)',
-    color: 'hsl(var(--foreground))',
+    color: 'hsl(var(--foreground, 220 9% 9%))',
     fontFamily: "'JetBrains Mono', monospace",
     borderRadius: '4px',
     padding: '2px 0',
@@ -175,21 +175,21 @@ export const editorTheme = EditorView.theme({
     padding: '8px',
     marginTop: '4px',
     marginBottom: '8px',
-    border: '1px solid hsl(var(--border) / 0.5)',
+    border: '1px solid hsl(var(--border, 220 13% 91%) / 0.5)',
     borderRadius: '6px',
-    backgroundColor: 'hsl(var(--muted) / 0.3)',
+    backgroundColor: 'hsl(var(--muted, 220 14% 96%) / 0.3)',
     pointerEvents: 'none',
     userSelect: 'none',
     opacity: '0.95',
   },
 
-  // ========== 动画关键帧 ==========
+  // ========== Animation Keyframes ==========
   '@keyframes mathFadeIn': {
     from: { opacity: '0', transform: 'scale(0.95)' },
     to: { opacity: '1', transform: 'scale(1)' },
   },
 
-  // ========== 表格样式 ==========
+  // ========== Table Styles ==========
   '.cm-table-widget': {
     display: 'block',
     overflowX: 'auto',
@@ -198,22 +198,22 @@ export const editorTheme = EditorView.theme({
   '.cm-table-source': {
     fontFamily: "'JetBrains Mono', monospace !important",
     whiteSpace: 'pre',
-    color: 'hsl(var(--foreground))',
+    color: 'hsl(var(--foreground, 220 9% 9%))',
     display: 'block',
     overflowX: 'auto',
   },
 
-  // ========== 图片样式 ==========
+  // ========== Image Styles ==========
   '.cm-image-widget': {
     display: 'block',
     margin: '8px 0',
   },
   '.cm-image-info': {
-    background: 'hsl(var(--muted))',
+    background: 'hsl(var(--muted, 220 14% 96%))',
     padding: '4px 8px',
     borderRadius: '4px',
     fontSize: '12px',
-    color: 'hsl(var(--muted-foreground))',
+    color: 'hsl(var(--muted-foreground, 220 9% 46%))',
     marginBottom: '4px',
     fontFamily: 'monospace',
   },
