@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm ci && npm run build && cd demo && npm ci && npm run build",
+  "buildCommand": "npm ci && npm run build && ls -la dist/ && cd demo && npm ci && ls -la ../dist/ && vite build",
   "outputDirectory": "demo/dist",
   "installCommand": "echo 'Skip install, handled in buildCommand'"
 }
