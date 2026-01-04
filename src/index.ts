@@ -18,12 +18,16 @@ export { livePreviewPlugin } from './plugins/livePreview';
 export { markdownStylePlugin } from './plugins/markdownStyle';
 export { mathPlugin, blockMathField } from './plugins/math';
 export { tableField } from './plugins/table';
+export { codeBlockField } from './plugins/codeBlock';
+export type { CodeBlockOptions } from './plugins/codeBlock';
 
 // Theme
 export { editorTheme } from './theme/default';
 
 // Utils
 export { renderMath, clearMathCache } from './utils/mathCache';
+export { highlightCode, registerLanguage, isLanguageRegistered } from './utils/codeHighlight';
+export type { HighlightResult } from './utils/codeHighlight';
 
 // Re-export types from CodeMirror for convenience
 export type { Extension } from '@codemirror/state';

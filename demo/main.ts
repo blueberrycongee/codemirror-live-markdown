@@ -11,6 +11,7 @@ import {
   mathPlugin,
   blockMathField,
   tableField,
+  codeBlockField,
   mouseSelectingField,
   collapseOnSelectionFacet,
   editorTheme,
@@ -73,6 +74,39 @@ Try clicking on the table to edit it! You can also use alignment:
 |:-----|:------:|------:|
 | L    |   C    |     R |
 | 1    |   2    |     3 |
+
+### Code Blocks 💻
+
+Code blocks with syntax highlighting:
+
+\`\`\`javascript
+function greet(name) {
+  console.log(\`Hello, \${name}!\`);
+  return { message: 'Welcome!' };
+}
+
+greet('World');
+\`\`\`
+
+\`\`\`python
+def fibonacci(n):
+    if n <= 1:
+        return n
+    return fibonacci(n-1) + fibonacci(n-2)
+
+print([fibonacci(i) for i in range(10)])
+\`\`\`
+
+\`\`\`typescript
+interface User {
+  name: string;
+  age: number;
+}
+
+const user: User = { name: 'Alice', age: 25 };
+\`\`\`
+
+Click on any code block to edit it!
 
 ### How does it work?
 
@@ -141,6 +175,7 @@ const state = EditorState.create({
       mathPlugin,
       blockMathField,
       tableField,
+      codeBlockField(),
     ]),
 
     // Theme
@@ -179,6 +214,7 @@ liveBtn.addEventListener('click', () => {
       mathPlugin,
       blockMathField,
       tableField,
+      codeBlockField(),
     ]),
   });
   liveBtn.classList.add('active');
