@@ -19,6 +19,7 @@ English | [简体中文](./README.zh-CN.md)
 - 🎨 **Smooth Animations** - CSS transitions for a polished experience
 - 📝 **Multiple Elements** - Bold, italic, headers, lists, quotes, and more
 - 🧮 **Math Formulas** - KaTeX rendering for inline and block math (v0.2.0+)
+- 📊 **Tables** - Live preview for Markdown tables (v0.3.0+)
 - ⚡ **Performance Optimized** - Position caching, drag selection optimization
 - 🔧 **TypeScript** - Full type definitions included
 
@@ -57,11 +58,13 @@ npm install katex
 import { EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { markdown } from '@codemirror/lang-markdown';
+import { Table } from '@lezer/markdown';
 import {
   livePreviewPlugin,
   markdownStylePlugin,
   mathPlugin,
   blockMathField,
+  tableField,
   mouseSelectingField,
   collapseOnSelectionFacet,
   editorTheme,
@@ -71,13 +74,14 @@ import {
 const state = EditorState.create({
   doc: '# Hello\n\nThis is **bold** and *italic* text.',
   extensions: [
-    markdown(),
+    markdown({ extensions: [Table] }),
     collapseOnSelectionFacet.of(true),
     mouseSelectingField,
     livePreviewPlugin,
     markdownStylePlugin,
     mathPlugin,      // Optional: Inline math support
     blockMathField,  // Optional: Block math support
+    tableField,      // Optional: Table support
     editorTheme,
   ],
 });
@@ -128,6 +132,7 @@ Scenario 2: Cursor at position 10 (inside "world")
 - `markdownStylePlugin` - Markdown styling (headers, bold, italic, etc.)
 - `mathPlugin` - Inline math formula rendering (requires KaTeX)
 - `blockMathField` - Block math formula rendering (requires KaTeX)
+- `tableField` - Table rendering (requires `@lezer/markdown` Table extension)
 - `editorTheme` - Default theme with animations
 
 ### State Management
@@ -171,6 +176,40 @@ The equation `$E = mc^2$` is famous.
 - Error handling for invalid LaTeX
 - Rendering cache for performance
 
+## Tables (v0.3.0+)
+
+Tables are rendered as HTML when cursor is outside:
+
+```markdown
+| Name  | Age | City     |
+|-------|-----|----------|
+| Alice | 25  | Beijing  |
+| Bob   | 30  | Shanghai |
+```
+
+**Alignment support:**
+```markdown
+| Left | Center | Right |
+|:-----|:------:|------:|
+| L    |   C    |     R |
+```
+
+**Requirements:**
+1. Enable GFM Table extension:
+```typescript
+import { markdown } from '@codemirror/lang-markdown';
+import { Table } from '@lezer/markdown';
+
+markdown({ extensions: [Table] })
+```
+2. Add `tableField` to your extensions
+
+**Features:**
+- Click rendered table to edit
+- Smooth transition between render and edit modes
+- Support for left, center, right alignment
+- Edit mode with source highlighting
+
 ## Customization
 
 Customize colors using CSS variables:
@@ -197,7 +236,7 @@ See [ROADMAP.md](./ROADMAP.md) for detailed version plan.
 
 **Next up:**
 - [x] v0.2.0-alpha: Math formulas (KaTeX) ✅
-- [ ] v0.3.0-alpha: Tables
+- [x] v0.3.0-alpha: Tables ✅
 - [ ] v0.4.0-alpha: Code blocks with syntax highlighting
 - [ ] v0.5.0-alpha: Images & Links
 - [ ] v1.0.0: Stable release

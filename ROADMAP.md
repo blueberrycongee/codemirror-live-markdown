@@ -70,8 +70,8 @@ npm install codemirror-live-markdown@alpha
 
 ---
 
-### ✅ v0.2.0-alpha.1 (Current)
-**ETA:** 1-2 weeks  
+### ✅ v0.2.0-alpha.1
+**Status:** Released  
 **Focus:** Math formulas
 
 **Features:**
@@ -87,15 +87,16 @@ npm install codemirror-live-markdown@alpha
 
 ---
 
-### 🔮 v0.3.0-alpha.1 (Next)
-**ETA:** 2-3 weeks  
+### ✅ v0.3.0-alpha.1 (Current)
+**Status:** Released  
 **Focus:** Tables
 
-**Planned Features:**
-- [ ] Markdown table rendering
-- [ ] Table widget with HTML output
-- [ ] Click to edit source
-- [ ] Responsive table styling
+**Features:**
+- ✅ Markdown table rendering
+- ✅ Table widget with HTML output
+- ✅ Click to edit source
+- ✅ Table alignment support (left, center, right)
+- ✅ Edit mode with source highlighting
 
 **Breaking Changes:** None
 
@@ -200,8 +201,8 @@ npm install codemirror-live-markdown@alpha
 | Version | Status | Features | Stability | Recommended For |
 |---------|--------|----------|-----------|-----------------|
 | 0.1.x-alpha | ✅ Released | Basic | Low | Early adopters, testing |
-| 0.2.x-alpha | 🟢 Current | + Math | Low | Math-heavy users |
-| 0.3.x-alpha | 🔵 Planned | + Tables | Low | Documentation |
+| 0.2.x-alpha | ✅ Released | + Math | Low | Math-heavy users |
+| 0.3.x-alpha | � Curnrent | + Tables | Low | Documentation |
 | 0.4.x-alpha | 🔵 Planned | + Code | Low | Technical writing |
 | 0.5.x-alpha | 🔵 Planned | + Images | Low | Rich content |
 | 0.6.x-beta | 🔵 Planned | All features | Medium | Beta testing |
@@ -226,4 +227,4 @@ Want to help? Check out:
 
 ---
 
-**Last Updated:** 2026-01-03
+**Last Updated:** 2026-01-04

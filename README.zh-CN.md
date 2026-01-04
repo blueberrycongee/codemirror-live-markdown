@@ -19,6 +19,7 @@
 - 🎨 **流畅动画** - CSS 过渡动画，体验丝滑
 - 📝 **多种元素** - 支持加粗、斜体、标题、列表、引用等
 - 🧮 **数学公式** - KaTeX 渲染行内和块级数学公式（v0.2.0+）
+- 📊 **表格** - Markdown 表格实时预览（v0.3.0+）
 - ⚡ **性能优化** - 位置缓存、拖拽选择优化
 - 🔧 **TypeScript** - 完整的类型定义
 
@@ -57,11 +58,13 @@ npm install katex
 import { EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { markdown } from '@codemirror/lang-markdown';
+import { Table } from '@lezer/markdown';
 import {
   livePreviewPlugin,
   markdownStylePlugin,
   mathPlugin,
   blockMathField,
+  tableField,
   mouseSelectingField,
   collapseOnSelectionFacet,
   editorTheme,
@@ -71,13 +74,14 @@ import {
 const state = EditorState.create({
   doc: '# 你好\n\n这是 **粗体** 和 *斜体* 文本。',
   extensions: [
-    markdown(),
+    markdown({ extensions: [Table] }),
     collapseOnSelectionFacet.of(true),
     mouseSelectingField,
     livePreviewPlugin,
     markdownStylePlugin,
     mathPlugin,      // 可选：行内数学公式支持
     blockMathField,  // 可选：块级数学公式支持
+    tableField,      // 可选：表格支持
     editorTheme,
   ],
 });
@@ -126,7 +130,9 @@ document.addEventListener('mouseup', () => {
 
 - `livePreviewPlugin` - 主实时预览插件
 - `markdownStylePlugin` - Markdown 样式（标题、粗体、斜体等）
-- `mathPlugin` - 数学公式渲染（需要 KaTeX）
+- `mathPlugin` - 行内数学公式渲染（需要 KaTeX）
+- `blockMathField` - 块级数学公式渲染（需要 KaTeX）
+- `tableField` - 表格渲染（需要 `@lezer/markdown` Table 扩展）
 - `editorTheme` - 带动画的默认主题
 
 ### 状态管理
@@ -170,6 +176,40 @@ document.addEventListener('mouseup', () => {
 - 无效 LaTeX 的错误处理
 - 渲染缓存提升性能
 
+## 表格（v0.3.0+）
+
+光标在表格外时，表格会渲染为 HTML：
+
+```markdown
+| 姓名  | 年龄 | 城市     |
+|-------|------|----------|
+| Alice | 25   | 北京     |
+| Bob   | 30   | 上海     |
+```
+
+**对齐支持：**
+```markdown
+| 左对齐 | 居中 | 右对齐 |
+|:-------|:----:|-------:|
+| L      |  C   |      R |
+```
+
+**使用要求：**
+1. 启用 GFM Table 扩展：
+```typescript
+import { markdown } from '@codemirror/lang-markdown';
+import { Table } from '@lezer/markdown';
+
+markdown({ extensions: [Table] })
+```
+2. 在扩展中添加 `tableField`
+
+**功能特性：**
+- 点击渲染的表格进入编辑模式
+- 渲染和编辑模式之间平滑过渡
+- 支持左对齐、居中、右对齐
+- 编辑模式下源码高亮显示
+
 ## 自定义样式
 
 使用 CSS 变量自定义颜色：
@@ -196,7 +236,7 @@ document.addEventListener('mouseup', () => {
 
 **即将推出：**
 - [x] v0.2.0-alpha: 数学公式（KaTeX）✅
-- [ ] v0.3.0-alpha: 表格
+- [x] v0.3.0-alpha: 表格 ✅
 - [ ] v0.4.0-alpha: 代码块语法高亮
 - [ ] v0.5.0-alpha: 图片和链接
 - [ ] v1.0.0: 稳定版本
