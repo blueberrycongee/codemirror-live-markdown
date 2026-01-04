@@ -1,5 +1,5 @@
 /**
- * 图片加载工具测试
+ * Image Loader Utility Tests
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
@@ -10,7 +10,7 @@ import {
   resolveImagePath,
 } from '../imageLoader';
 
-// Mock Image 对象
+// Mock Image object
 class MockImage {
   src = '';
   width = 0;
@@ -19,7 +19,7 @@ class MockImage {
   onerror: ((error: Error) => void) | null = null;
 
   constructor() {
-    // 模拟异步加载
+    // Simulate async loading
     setTimeout(() => {
       if (this.src.includes('error') || this.src.includes('invalid')) {
         this.onerror?.(new Error('Load failed'));
@@ -32,7 +32,7 @@ class MockImage {
   }
 }
 
-// 替换全局 Image
+// Replace global Image
 const originalImage = globalThis.Image;
 
 describe('imageLoader', () => {
@@ -79,7 +79,7 @@ describe('imageLoader', () => {
     it('should handle timeout', async () => {
       vi.useFakeTimers();
 
-      // 创建一个永不完成的 Mock
+      // Create a never-completing Mock
       class SlowImage {
         src = '';
         onload: (() => void) | null = null;
@@ -87,9 +87,11 @@ describe('imageLoader', () => {
       }
       (globalThis as unknown as { Image: typeof SlowImage }).Image = SlowImage;
 
-      const promise = loadImage('https://example.com/slow.png', { timeout: 100 });
+      const promise = loadImage('https://example.com/slow.png', {
+        timeout: 100,
+      });
 
-      // 快进超时时间
+      // Fast forward timeout
       vi.advanceTimersByTime(150);
 
       const result = await promise;
@@ -142,7 +144,7 @@ describe('imageLoader', () => {
       ]);
 
       expect(results).toHaveLength(3);
-      // 所有结果应该相同
+      // All results should be the same
       expect(results[0]).toEqual(results[1]);
       expect(results[1]).toEqual(results[2]);
     });
@@ -157,21 +159,24 @@ describe('imageLoader', () => {
     });
 
     it('should return cached result for same URL', async () => {
-      // 第一次加载
+      // First load
       await loadImage('https://example.com/test.png');
 
-      // 替换 Image 为一个会失败的版本
+      // Replace Image with a failing version
       class FailImage {
         src = '';
         onload: (() => void) | null = null;
         onerror: ((error: Error) => void) | null = null;
         constructor() {
-          setTimeout(() => this.onerror?.(new Error('Should not be called')), 10);
+          setTimeout(
+            () => this.onerror?.(new Error('Should not be called')),
+            10
+          );
         }
       }
       (globalThis as unknown as { Image: typeof FailImage }).Image = FailImage;
 
-      // 第二次应该从缓存返回，不会触发新的加载
+      // Second should return from cache, not trigger new load
       const result = await loadImage('https://example.com/test.png');
 
       expect(result.loaded).toBe(true);
@@ -182,7 +187,7 @@ describe('imageLoader', () => {
 
       clearImageCache();
 
-      // 替换为失败的 Image
+      // Replace with failing Image
       class FailImage {
         src = '';
         onload: (() => void) | null = null;
@@ -193,7 +198,7 @@ describe('imageLoader', () => {
       }
       (globalThis as unknown as { Image: typeof FailImage }).Image = FailImage;
 
-      // 清除缓存后应该重新加载
+      // After clearing cache should reload
       const result = await loadImage('https://example.com/clear-test.png');
 
       expect(result.loaded).toBe(false);
@@ -211,12 +216,18 @@ describe('imageLoader', () => {
     });
 
     it('should resolve relative path with basePath', () => {
-      expect(resolveImagePath('./image.png', '/assets/')).toBe('/assets/image.png');
-      expect(resolveImagePath('image.png', '/assets/')).toBe('/assets/image.png');
+      expect(resolveImagePath('./image.png', '/assets/')).toBe(
+        '/assets/image.png'
+      );
+      expect(resolveImagePath('image.png', '/assets/')).toBe(
+        '/assets/image.png'
+      );
     });
 
     it('should handle basePath without trailing slash', () => {
-      expect(resolveImagePath('image.png', '/assets')).toBe('/assets/image.png');
+      expect(resolveImagePath('image.png', '/assets')).toBe(
+        '/assets/image.png'
+      );
     });
 
     it('should prevent path traversal attacks', () => {

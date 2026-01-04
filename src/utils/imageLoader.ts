@@ -1,65 +1,65 @@
 /**
- * 图片加载工具
+ * Image Loader Utility
  *
- * 提供图片异步加载、缓存和路径解析功能
+ * Provides async image loading, caching, and path resolution
  */
 
 /**
- * 加载后的图片信息
+ * Loaded image info
  */
 export interface LoadedImage {
-  /** 图片源地址 */
+  /** Image source URL */
   src: string;
-  /** 图片宽度 */
+  /** Image width */
   width: number;
-  /** 图片高度 */
+  /** Image height */
   height: number;
-  /** 是否加载成功 */
+  /** Whether load succeeded */
   loaded: boolean;
-  /** 错误信息 */
+  /** Error message */
   error?: string;
 }
 
 /**
- * 图片加载选项
+ * Image load options
  */
 export interface LoadImageOptions {
-  /** 超时时间（毫秒），默认 10000 */
+  /** Timeout in milliseconds, default 10000 */
   timeout?: number;
-  /** 本地图片基础路径 */
+  /** Base path for local images */
   basePath?: string;
 }
 
-// 图片缓存
+// Image cache
 const imageCache = new Map<string, LoadedImage>();
 
-// 正在加载的 Promise 缓存（防止重复请求）
+// Loading promise cache (prevent duplicate requests)
 const loadingPromises = new Map<string, Promise<LoadedImage>>();
 
 /**
- * 解析图片路径
+ * Resolve image path
  *
- * @param src - 原始路径
- * @param basePath - 基础路径
- * @returns 解析后的完整路径
+ * @param src - Original path
+ * @param basePath - Base path
+ * @returns Resolved full path
  */
 export function resolveImagePath(src: string, basePath?: string): string {
-  // data URL 直接返回
+  // Return data URL as-is
   if (src.startsWith('data:')) {
     return src;
   }
 
-  // 绝对 URL 直接返回
+  // Return absolute URL as-is
   if (src.startsWith('http://') || src.startsWith('https://')) {
     return src;
   }
 
-  // 相对路径需要解析
+  // Relative paths need resolution
   if (basePath) {
-    // 移除路径遍历攻击
+    // Remove path traversal attacks
     const sanitizedSrc = src.replace(/\.\.\//g, '').replace(/^\.\//g, '');
 
-    // 确保 basePath 以 / 结尾
+    // Ensure basePath ends with /
     const normalizedBase = basePath.endsWith('/') ? basePath : basePath + '/';
 
     return normalizedBase + sanitizedSrc;
@@ -69,11 +69,11 @@ export function resolveImagePath(src: string, basePath?: string): string {
 }
 
 /**
- * 加载单张图片
+ * Load single image
  *
- * @param src - 图片地址
- * @param options - 加载选项
- * @returns 加载结果
+ * @param src - Image URL
+ * @param options - Load options
+ * @returns Load result
  */
 export function loadImage(
   src: string,
@@ -81,22 +81,22 @@ export function loadImage(
 ): Promise<LoadedImage> {
   const { timeout = 10000, basePath } = options;
 
-  // 解析路径
+  // Resolve path
   const resolvedSrc = resolveImagePath(src, basePath);
 
-  // 检查缓存
+  // Check cache
   const cached = imageCache.get(resolvedSrc);
   if (cached) {
     return Promise.resolve(cached);
   }
 
-  // 检查是否正在加载
+  // Check if already loading
   const loading = loadingPromises.get(resolvedSrc);
   if (loading) {
     return loading;
   }
 
-  // 创建加载 Promise
+  // Create load promise
   const promise = new Promise<LoadedImage>((resolve) => {
     const img = new Image();
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -139,11 +139,11 @@ export function loadImage(
         error,
       };
 
-      // 不缓存失败的结果，允许重试
+      // Don't cache failed results, allow retry
       resolve(result);
     };
 
-    // 设置超时
+    // Set timeout
     timeoutId = setTimeout(() => {
       handleError(`Image load timeout after ${timeout}ms`);
     }, timeout);
@@ -151,7 +151,7 @@ export function loadImage(
     img.onload = handleSuccess;
     img.onerror = () => handleError('Image load failed');
 
-    // 开始加载
+    // Start loading
     img.src = resolvedSrc;
   });
 
@@ -160,23 +160,23 @@ export function loadImage(
 }
 
 /**
- * 预加载多张图片
+ * Preload multiple images
  *
- * @param srcs - 图片地址数组
- * @param options - 加载选项
- * @returns 所有图片的加载结果
+ * @param srcs - Image URL array
+ * @param options - Load options
+ * @returns Load results for all images
  */
 export async function preloadImages(
   srcs: string[],
   options: LoadImageOptions = {}
 ): Promise<LoadedImage[]> {
-  // 并行加载所有图片
+  // Load all images in parallel
   const promises = srcs.map((src) => loadImage(src, options));
   return Promise.all(promises);
 }
 
 /**
- * 清除图片缓存
+ * Clear image cache
  */
 export function clearImageCache(): void {
   imageCache.clear();

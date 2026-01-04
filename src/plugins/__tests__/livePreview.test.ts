@@ -7,7 +7,7 @@ import { mouseSelectingField } from '../../core/mouseSelecting';
 import { collapseOnSelectionFacet } from '../../core/facets';
 
 /**
- * 创建测试用的 EditorView
+ * Create test EditorView
  */
 function createTestView(doc: string, cursorPos?: number) {
   const state = EditorState.create({
@@ -21,7 +21,7 @@ function createTestView(doc: string, cursorPos?: number) {
     ],
   });
 
-  // 创建一个最小化的 DOM 容器
+  // Create minimal DOM container
   const container = document.createElement('div');
   return new EditorView({ state, parent: container });
 }
@@ -31,19 +31,19 @@ describe('livePreviewPlugin', () => {
     it('should create decorations on initialization', () => {
       const view = createTestView('**bold** text');
       const plugin = view.plugin(livePreviewPlugin);
-      
+
       expect(plugin).toBeDefined();
       expect(plugin?.decorations).toBeDefined();
-      
+
       view.destroy();
     });
 
     it('should handle empty document', () => {
       const view = createTestView('');
       const plugin = view.plugin(livePreviewPlugin);
-      
+
       expect(plugin?.decorations.size).toBe(0);
-      
+
       view.destroy();
     });
   });
@@ -52,31 +52,31 @@ describe('livePreviewPlugin', () => {
     it('should detect EmphasisMark (*)', () => {
       const view = createTestView('*italic* text');
       const plugin = view.plugin(livePreviewPlugin);
-      
-      // 应该有装饰（EmphasisMark）
+
+      // Should have decorations (EmphasisMark)
       expect(plugin?.decorations.size).toBeGreaterThan(0);
-      
+
       view.destroy();
     });
 
     it('should detect StrikethroughMark (~~)', () => {
-      // 注意：标准 markdown 解析器可能不支持 ~~，需要 GFM 扩展
-      // 这里测试插件不会因为不支持的语法而崩溃
+      // Note: Standard markdown parser may not support ~~, needs GFM extension
+      // Here we test that plugin doesn't crash on unsupported syntax
       const view = createTestView('~~strikethrough~~ text');
       const plugin = view.plugin(livePreviewPlugin);
-      
-      // 插件应该正常初始化，即使没有检测到 StrikethroughMark
+
+      // Plugin should initialize normally even if StrikethroughMark not detected
       expect(plugin).toBeDefined();
-      
+
       view.destroy();
     });
 
     it('should detect CodeMark (`)', () => {
       const view = createTestView('`code` text');
       const plugin = view.plugin(livePreviewPlugin);
-      
+
       expect(plugin?.decorations.size).toBeGreaterThan(0);
-      
+
       view.destroy();
     });
   });
@@ -85,58 +85,62 @@ describe('livePreviewPlugin', () => {
     it('should detect HeaderMark (#)', () => {
       const view = createTestView('# Heading');
       const plugin = view.plugin(livePreviewPlugin);
-      
+
       expect(plugin?.decorations.size).toBeGreaterThan(0);
-      
+
       view.destroy();
     });
 
     it('should detect ListMark (-)', () => {
       const view = createTestView('- list item');
       const plugin = view.plugin(livePreviewPlugin);
-      
+
       expect(plugin?.decorations.size).toBeGreaterThan(0);
-      
+
       view.destroy();
     });
 
     it('should detect QuoteMark (>)', () => {
       const view = createTestView('> quote');
       const plugin = view.plugin(livePreviewPlugin);
-      
+
       expect(plugin?.decorations.size).toBeGreaterThan(0);
-      
+
       view.destroy();
     });
   });
 
   describe('cursor interaction', () => {
     it('should show visible class when cursor is on inline mark', () => {
-      // 光标在 **bold** 内部
+      // Cursor inside **bold**
       const view = createTestView('**bold** text', 4);
       const plugin = view.plugin(livePreviewPlugin);
-      
-      // 检查装饰是否包含 visible 类
+
+      // Check if decorations contain visible class
       let hasInlineClass = false;
-      plugin?.decorations.between(0, view.state.doc.length, (_from, _to, deco) => {
-        const spec = deco.spec as { class?: string };
-        if (spec.class?.includes('cm-formatting-inline')) {
-          hasInlineClass = true;
+      plugin?.decorations.between(
+        0,
+        view.state.doc.length,
+        (_from, _to, deco) => {
+          const spec = deco.spec as { class?: string };
+          if (spec.class?.includes('cm-formatting-inline')) {
+            hasInlineClass = true;
+          }
         }
-      });
-      
-      // 插件应该检测到行内标记
+      );
+
+      // Plugin should detect inline marks
       expect(hasInlineClass).toBe(true);
-      
+
       view.destroy();
     });
 
     it('should not show visible class when cursor is outside inline mark', () => {
-      // 光标在文本末尾
+      // Cursor at end of text
       const view = createTestView('**bold** text', 13);
       const plugin = view.plugin(livePreviewPlugin);
-      
-      // 检查 **bold** 的装饰不应该有 visible 类
+
+      // Check **bold** decorations should not have visible class
       let hasVisibleOnBold = false;
       plugin?.decorations.between(0, 8, (_from, _to, deco) => {
         const spec = deco.spec as { class?: string };
@@ -144,17 +148,17 @@ describe('livePreviewPlugin', () => {
           hasVisibleOnBold = true;
         }
       });
-      
+
       expect(hasVisibleOnBold).toBe(false);
-      
+
       view.destroy();
     });
 
     it('should show visible class for block mark when cursor is on that line', () => {
-      // 光标在标题行
+      // Cursor on heading line
       const view = createTestView('# Heading\nParagraph', 5);
       const plugin = view.plugin(livePreviewPlugin);
-      
+
       let hasVisibleBlock = false;
       plugin?.decorations.between(0, 2, (_from, _to, deco) => {
         const spec = deco.spec as { class?: string };
@@ -162,9 +166,9 @@ describe('livePreviewPlugin', () => {
           hasVisibleBlock = true;
         }
       });
-      
+
       expect(hasVisibleBlock).toBe(true);
-      
+
       view.destroy();
     });
   });
@@ -174,68 +178,72 @@ describe('livePreviewPlugin', () => {
       const view = createTestView('plain text');
       const plugin = view.plugin(livePreviewPlugin);
       const initialSize = plugin?.decorations.size ?? 0;
-      
-      // 插入 markdown 标记
+
+      // Insert markdown marks
       view.dispatch({
         changes: { from: 0, to: 10, insert: '**bold** text' },
       });
-      
+
       const newSize = view.plugin(livePreviewPlugin)?.decorations.size ?? 0;
       expect(newSize).toBeGreaterThan(initialSize);
-      
+
       view.destroy();
     });
 
     it('should rebuild decorations on selection change', () => {
       const view = createTestView('**bold** text', 0);
-      
-      // 移动光标到 bold 内部
+
+      // Move cursor inside bold
       view.dispatch({
         selection: { anchor: 4 },
       });
-      
+
       const pluginAfter = view.plugin(livePreviewPlugin);
-      
-      // 插件应该在选择变化后仍然有装饰
+
+      // Plugin should still have decorations after selection change
       expect(pluginAfter?.decorations.size).toBeGreaterThanOrEqual(0);
-      // 装饰应该被重建（插件仍然正常工作）
+      // Decorations should be rebuilt (plugin still works)
       expect(pluginAfter).toBeDefined();
-      
+
       view.destroy();
     });
   });
 
   describe('math formula exclusion', () => {
-    it('should skip CodeMark for math formulas (`$...`)', () => {
+    it('should skip CodeMark for math formulas (`$...$`)', () => {
       const view = createTestView('`$E=mc^2$` text');
       const plugin = view.plugin(livePreviewPlugin);
-      
-      // 数学公式的 CodeMark 应该被跳过，由 mathPlugin 处理
-      // 这里只检查插件正常工作，不抛出错误
+
+      // Math formula CodeMark should be skipped, handled by mathPlugin
+      // Here we just check plugin works normally without errors
       expect(plugin).toBeDefined();
-      
+
       view.destroy();
     });
   });
 
   describe('multiple selections', () => {
     it('should handle multiple active lines', () => {
-      // 使用单选区测试多行标题
+      // Use single selection to test multiple heading lines
       const view = createTestView('# Heading 1\n# Heading 2\n# Heading 3', 5);
       const plugin = view.plugin(livePreviewPlugin);
-      
-      // 应该有块级标记装饰
+
+      // Should have block mark decorations
       let blockCount = 0;
-      plugin?.decorations.between(0, view.state.doc.length, (_from, _to, deco) => {
-        const spec = deco.spec as { class?: string };
-        if (spec.class?.includes('cm-formatting-block')) {
-          blockCount++;
+      plugin?.decorations.between(
+        0,
+        view.state.doc.length,
+        (_from, _to, deco) => {
+          const spec = deco.spec as { class?: string };
+          if (spec.class?.includes('cm-formatting-block')) {
+            blockCount++;
+          }
         }
-      });
-      
-      // 三个标题应该有三个 HeaderMark
+      );
+
+      // Three headings should have three HeaderMarks
       expect(blockCount).toBe(3);
-      
+
       view.destroy();
     });
   });

@@ -4,7 +4,7 @@ import { TableData } from '../../utils/tableParser';
 
 describe('TableWidget', () => {
   beforeEach(() => {
-    // 确保 DOM 环境
+    // Ensure DOM environment
   });
 
   const simpleData: TableData = {
@@ -108,7 +108,7 @@ describe('TableWidget', () => {
     const dom = widget.toDOM();
 
     const cell = dom.querySelector('td');
-    // 应该是文本内容，不是 HTML
+    // Should be text content, not HTML
     expect(cell?.textContent).toBe('<script>alert(1)</script>');
     expect(cell?.innerHTML).not.toContain('<script>');
   });

@@ -1,14 +1,14 @@
 /**
- * 表格 Widget
+ * Table Widget
  *
- * 将 Markdown 表格渲染为 HTML 表格
+ * Renders Markdown table as HTML table
  */
 
 import { WidgetType } from '@codemirror/view';
 import { TableData } from '../utils/tableParser';
 
 /**
- * 表格 Widget 类
+ * Table Widget class
  */
 export class TableWidget extends WidgetType {
   constructor(readonly data: TableData) {
@@ -16,19 +16,19 @@ export class TableWidget extends WidgetType {
   }
 
   /**
-   * 判断两个 Widget 是否相等
+   * Check if two widgets are equal
    */
   eq(other: TableWidget): boolean {
     if (this.data.headers.length !== other.data.headers.length) return false;
     if (this.data.rows.length !== other.data.rows.length) return false;
 
-    // 比较表头
+    // Compare headers
     for (let i = 0; i < this.data.headers.length; i++) {
       if (this.data.headers[i] !== other.data.headers[i]) return false;
       if (this.data.alignments[i] !== other.data.alignments[i]) return false;
     }
 
-    // 比较数据行
+    // Compare data rows
     for (let i = 0; i < this.data.rows.length; i++) {
       for (let j = 0; j < this.data.headers.length; j++) {
         if (this.data.rows[i][j] !== other.data.rows[i][j]) return false;
@@ -39,7 +39,7 @@ export class TableWidget extends WidgetType {
   }
 
   /**
-   * 渲染为 DOM 元素
+   * Render to DOM element
    */
   toDOM(): HTMLElement {
     const container = document.createElement('div');
@@ -47,7 +47,7 @@ export class TableWidget extends WidgetType {
 
     const table = document.createElement('table');
 
-    // 渲染表头
+    // Render header
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
 
@@ -63,7 +63,7 @@ export class TableWidget extends WidgetType {
     thead.appendChild(headerRow);
     table.appendChild(thead);
 
-    // 渲染数据行
+    // Render data rows
     const tbody = document.createElement('tbody');
 
     this.data.rows.forEach((row) => {
@@ -88,9 +88,9 @@ export class TableWidget extends WidgetType {
   }
 
   /**
-   * 是否忽略事件
+   * Whether to ignore events
    *
-   * 返回 false 允许点击表格进入编辑模式
+   * Return false to allow click to enter edit mode
    */
   ignoreEvent(): boolean {
     return false;
@@ -98,7 +98,7 @@ export class TableWidget extends WidgetType {
 }
 
 /**
- * 创建表格 Widget
+ * Create table widget
  */
 export function createTableWidget(data: TableData): TableWidget {
   return new TableWidget(data);

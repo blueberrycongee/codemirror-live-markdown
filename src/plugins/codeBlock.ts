@@ -1,9 +1,9 @@
 /**
- * 代码块插件
+ * Code Block Plugin
  *
- * 实现 Markdown 代码块的语法高亮预览
- * 光标不在代码块内时显示渲染结果，进入时显示源码
- * 支持精确的点击位置映射
+ * Implements syntax highlighting preview for Markdown code blocks
+ * Shows rendered result when cursor is outside code block, shows source when inside
+ * Supports precise click position mapping
  */
 
 import { syntaxTree } from '@codemirror/language';
@@ -14,14 +14,14 @@ import { mouseSelectingField } from '../core/mouseSelecting';
 import { createCodeBlockWidget } from '../widgets/codeBlockWidget';
 
 /**
- * 代码块插件配置
+ * Code block plugin configuration
  */
 export interface CodeBlockOptions {
-  /** 是否显示行号，默认 false */
+  /** Whether to show line numbers, default false */
   lineNumbers?: boolean;
-  /** 是否显示复制按钮，默认 true */
+  /** Whether to show copy button, default true */
   copyButton?: boolean;
-  /** 默认语言，默认 'text' */
+  /** Default language, default 'text' */
   defaultLanguage?: string;
 }
 
@@ -32,12 +32,12 @@ const defaultOptions: Required<CodeBlockOptions> = {
 };
 
 /**
- * 需要跳过的语言（由其他插件处理）
+ * Languages to skip (handled by other plugins)
  */
 const SKIP_LANGUAGES = new Set(['math']);
 
 /**
- * 构建代码块装饰
+ * Build code block decorations
  */
 function buildCodeBlockDecorations(
   state: EditorState,
@@ -49,7 +49,7 @@ function buildCodeBlockDecorations(
   syntaxTree(state).iterate({
     enter: (node) => {
       if (node.name === 'FencedCode') {
-        // 获取语言信息
+        // Get language info
         const codeInfo = node.node.getChild('CodeInfo');
         let language = options.defaultLanguage;
 
@@ -57,19 +57,19 @@ function buildCodeBlockDecorations(
           language = state.doc.sliceString(codeInfo.from, codeInfo.to).trim();
         }
 
-        // 跳过特殊语言（如 math）
+        // Skip special languages (like math)
         if (SKIP_LANGUAGES.has(language)) {
           return;
         }
 
-        // 获取代码内容
+        // Get code content
         const codeText = node.node.getChild('CodeText');
         const code = codeText
           ? state.doc.sliceString(codeText.from, codeText.to)
           : '';
         const codeFrom = codeText ? codeText.from : node.from;
 
-        // 计算每行的起始位置
+        // Calculate start position of each line
         const lineStarts: number[] = [];
         if (codeText) {
           const startPos = codeText.from;
@@ -81,11 +81,11 @@ function buildCodeBlockDecorations(
           }
         }
 
-        // 决定显示模式
+        // Decide display mode
         const isTouched = shouldShowSource(state, node.from, node.to);
 
         if (!isTouched && !isDrag) {
-          // 渲染模式：显示 Widget
+          // Render mode: show widget
           const widget = createCodeBlockWidget({
             code,
             language,
@@ -101,7 +101,7 @@ function buildCodeBlockDecorations(
             Decoration.replace({ widget, block: true }).range(node.from, node.to)
           );
         } else {
-          // 编辑模式：为每一行添加背景色
+          // Edit mode: add background to each line
           for (let pos = node.from; pos <= node.to; ) {
             const line = state.doc.lineAt(pos);
             decorations.push(
@@ -118,22 +118,22 @@ function buildCodeBlockDecorations(
 }
 
 /**
- * 创建代码块点击处理器
+ * Create code block click handler
  */
 function createCodeBlockClickHandler() {
   return EditorView.domEventHandlers({
-    // 监听自定义事件（来自 Widget）
+    // Listen for custom event (from widget)
     'codeblock-click': (event: Event, view) => {
       const customEvent = event as CustomEvent<{ targetPos: number }>;
       const targetPos = customEvent.detail.targetPos;
 
-      // 设置光标位置
+      // Set cursor position
       view.dispatch({
         selection: { anchor: targetPos },
         scrollIntoView: true,
       });
 
-      // 聚焦编辑器
+      // Focus editor
       view.focus();
 
       return true;
@@ -142,7 +142,7 @@ function createCodeBlockClickHandler() {
 }
 
 /**
- * 创建代码块 StateField
+ * Create code block StateField
  */
 function createCodeBlockField(
   options: Required<CodeBlockOptions>
@@ -153,12 +153,12 @@ function createCodeBlockField(
     },
 
     update(deco, tr) {
-      // 文档变化或重新配置时重建
+      // Rebuild on document or config change
       if (tr.docChanged || tr.reconfigured) {
         return buildCodeBlockDecorations(tr.state, options);
       }
 
-      // 拖拽状态变化时重建
+      // Rebuild on drag state change
       const isDragging = tr.state.field(mouseSelectingField, false);
       const wasDragging = tr.startState.field(mouseSelectingField, false);
 
@@ -166,12 +166,12 @@ function createCodeBlockField(
         return buildCodeBlockDecorations(tr.state, options);
       }
 
-      // 拖拽中保持不变
+      // Keep unchanged during drag
       if (isDragging) {
         return deco;
       }
 
-      // 选区变化时重建
+      // Rebuild on selection change
       if (tr.selection) {
         return buildCodeBlockDecorations(tr.state, options);
       }
@@ -183,25 +183,25 @@ function createCodeBlockField(
   });
 }
 
-// 缓存 StateField 实例（暂时禁用）
+// Cache StateField instance (temporarily disabled)
 // let cachedField: StateField<DecorationSet> | null = null;
 // let cachedOptions: Required<CodeBlockOptions> | null = null;
 // let cachedClickHandler: ReturnType<typeof createCodeBlockClickHandler> | null = null;
 
 /**
- * 代码块插件
+ * Code block plugin
  *
- * @param options - 配置选项
- * @returns Extension 数组（StateField + 点击处理器）
+ * @param options - Configuration options
+ * @returns Extension array (StateField + click handler)
  *
  * @example
  * ```typescript
  * import { codeBlockField } from 'codemirror-live-markdown';
  *
- * // 使用默认配置
+ * // Use default config
  * extensions: [codeBlockField()]
  *
- * // 自定义配置
+ * // Custom config
  * extensions: [codeBlockField({
  *   lineNumbers: true,
  *   copyButton: true,

@@ -1,8 +1,8 @@
 /**
- * 图片插件
+ * Image Plugin
  *
- * 实现 Markdown 图片的实时预览
- * 光标不在图片语法内时显示图片预览，进入时显示源码
+ * Implements live preview for Markdown images
+ * Shows image preview when cursor is outside image syntax, shows source when inside
  */
 
 import { syntaxTree } from '@codemirror/language';
@@ -10,22 +10,24 @@ import { EditorState, Range, StateField } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView } from '@codemirror/view';
 import { shouldShowSource } from '../core/shouldShowSource';
 import { mouseSelectingField } from '../core/mouseSelecting';
-import { createImageWidget, ImageData, ImageOptions } from '../widgets/imageWidget';
+import {
+  createImageWidget,
+  ImageData,
+  ImageOptions,
+} from '../widgets/imageWidget';
 
 export type { ImageOptions } from '../widgets/imageWidget';
 
 /**
- * 解析图片语法
+ * Parse image syntax
  *
- * @param text - 图片语法文本
- * @returns 解析后的图片数据，或 null
+ * @param text - Image syntax text
+ * @returns Parsed image data, or null
  */
 export function parseImageSyntax(text: string): ImageData | null {
-  // 匹配 ![alt](url) 或 ![alt](url "title") 或 ![alt](url 'title')
-  // URL 部分支持括号（使用贪婪匹配到最后一个括号前）
-  const match = text.match(
-    /^!\[([^\]]*)\]\((.+?)(?:\s+["']([^"']+)["'])?\)$/
-  );
+  // Match ![alt](url) or ![alt](url "title") or ![alt](url 'title')
+  // URL part supports parentheses (greedy match to last parenthesis)
+  const match = text.match(/^!\[([^\]]*)\]\((.+?)(?:\s+["']([^"']+)["'])?\)$/);
 
   if (!match) {
     return null;
@@ -33,8 +35,11 @@ export function parseImageSyntax(text: string): ImageData | null {
 
   const [, alt, src, title] = match;
 
-  // 判断是否为本地图片
-  const isLocal = !src.startsWith('http://') && !src.startsWith('https://') && !src.startsWith('data:');
+  // Check if it's a local image
+  const isLocal =
+    !src.startsWith('http://') &&
+    !src.startsWith('https://') &&
+    !src.startsWith('data:');
 
   return {
     src,
@@ -45,7 +50,7 @@ export function parseImageSyntax(text: string): ImageData | null {
 }
 
 /**
- * 默认选项
+ * Default options
  */
 const defaultOptions: Required<ImageOptions> = {
   maxWidth: '100%',
@@ -56,7 +61,7 @@ const defaultOptions: Required<ImageOptions> = {
 };
 
 /**
- * 构建图片装饰
+ * Build image decorations
  */
 function buildImageDecorations(
   state: EditorState,
@@ -71,7 +76,7 @@ function buildImageDecorations(
         const from = node.from;
         const to = node.to;
 
-        // 获取图片语法文本
+        // Get image syntax text
         const text = state.doc.sliceString(from, to);
         const imageData = parseImageSyntax(text);
 
@@ -79,18 +84,18 @@ function buildImageDecorations(
           return;
         }
 
-        // 决定显示模式
+        // Decide display mode
         const isTouched = shouldShowSource(state, from, to);
 
         if (!isTouched && !isDrag) {
-          // 渲染模式：显示 Widget
+          // Render mode: show widget
           const widget = createImageWidget(imageData, options);
 
           decorations.push(
             Decoration.replace({ widget, block: true }).range(from, to)
           );
         } else {
-          // 编辑模式：为图片所在行添加背景色
+          // Edit mode: add background to image line
           const line = state.doc.lineAt(from);
           decorations.push(
             Decoration.line({ class: 'cm-image-source' }).range(line.from)
@@ -104,21 +109,23 @@ function buildImageDecorations(
 }
 
 /**
- * 创建图片 StateField
+ * Create image StateField
  */
-function createImageField(options: Required<ImageOptions>): StateField<DecorationSet> {
+function createImageField(
+  options: Required<ImageOptions>
+): StateField<DecorationSet> {
   return StateField.define<DecorationSet>({
     create(state) {
       return buildImageDecorations(state, options);
     },
 
     update(deco, tr) {
-      // 文档变化或重新配置时重建
+      // Rebuild on document or config change
       if (tr.docChanged || tr.reconfigured) {
         return buildImageDecorations(tr.state, options);
       }
 
-      // 拖拽状态变化时重建
+      // Rebuild on drag state change
       const isDragging = tr.state.field(mouseSelectingField, false);
       const wasDragging = tr.startState.field(mouseSelectingField, false);
 
@@ -126,12 +133,12 @@ function createImageField(options: Required<ImageOptions>): StateField<Decoratio
         return buildImageDecorations(tr.state, options);
       }
 
-      // 拖拽中保持不变
+      // Keep unchanged during drag
       if (isDragging) {
         return deco;
       }
 
-      // 选区变化时重建
+      // Rebuild on selection change
       if (tr.selection) {
         return buildImageDecorations(tr.state, options);
       }
@@ -143,24 +150,24 @@ function createImageField(options: Required<ImageOptions>): StateField<Decoratio
   });
 }
 
-// 缓存 StateField 实例
+// Cache StateField instance
 let cachedField: StateField<DecorationSet> | null = null;
 let cachedOptions: Required<ImageOptions> | null = null;
 
 /**
- * 图片插件
+ * Image plugin
  *
- * @param options - 配置选项
+ * @param options - Configuration options
  * @returns StateField
  *
  * @example
  * ```typescript
  * import { imageField } from 'codemirror-live-markdown';
  *
- * // 使用默认配置
+ * // Use default config
  * extensions: [imageField()]
  *
- * // 自定义配置
+ * // Custom config
  * extensions: [imageField({
  *   maxWidth: '600px',
  *   showAlt: true,
@@ -171,7 +178,7 @@ let cachedOptions: Required<ImageOptions> | null = null;
 export function imageField(options?: ImageOptions): StateField<DecorationSet> {
   const mergedOptions = { ...defaultOptions, ...options };
 
-  // 检查是否可以复用缓存
+  // Check if cache can be reused
   if (
     cachedField &&
     cachedOptions &&
@@ -184,7 +191,7 @@ export function imageField(options?: ImageOptions): StateField<DecorationSet> {
     return cachedField;
   }
 
-  // 创建新的 StateField
+  // Create new StateField
   cachedField = createImageField(mergedOptions);
   cachedOptions = mergedOptions;
 

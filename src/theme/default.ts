@@ -194,8 +194,8 @@ export const editorTheme = EditorView.theme({
     display: 'block',
     overflowX: 'auto',
     cursor: 'text',
-    // 注意：不要添加 margin，会导致 Widget 高度与源码高度不一致，
-    // 从而影响 CodeMirror 的坐标计算，导致点击位置偏移
+    // Note: Don't add margin, it causes Widget height to differ from source height,
+    // which affects CodeMirror's coordinate calculations and causes click position offset
   },
   '.cm-table-widget table': {
     borderCollapse: 'collapse',

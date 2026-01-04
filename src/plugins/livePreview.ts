@@ -1,23 +1,28 @@
 import { syntaxTree } from '@codemirror/language';
 import { Range } from '@codemirror/state';
-import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate } from '@codemirror/view';
+import {
+  Decoration,
+  DecorationSet,
+  EditorView,
+  ViewPlugin,
+  ViewUpdate,
+} from '@codemirror/view';
 import { shouldShowSource } from '../core/shouldShowSource';
 import { mouseSelectingField } from '../core/mouseSelecting';
 import { checkUpdateAction } from '../core/pluginUpdateHelper';
 
 /**
- * 需要跳过的父节点类型
- * 这些节点内的标记不应该被处理
+ * Parent node types to skip
+ * Marks inside these nodes should not be processed
  */
-const SKIP_PARENT_TYPES = new Set([
-  'FencedCode',
-  'CodeBlock',
-]);
+const SKIP_PARENT_TYPES = new Set(['FencedCode', 'CodeBlock']);
 
 /**
- * 检查节点是否在需要跳过的父节点内
+ * Check if node is inside a skipped parent
  */
-function isInsideSkippedParent(node: { node: { parent: { name: string; parent: unknown } | null } }): boolean {
+function isInsideSkippedParent(node: {
+  node: { parent: { name: string; parent: unknown } | null };
+}): boolean {
   let parent = node.node.parent;
   while (parent) {
     if (SKIP_PARENT_TYPES.has(parent.name)) {
@@ -29,14 +34,15 @@ function isInsideSkippedParent(node: { node: { parent: { name: string; parent: u
 }
 
 /**
- * Live Preview 插件
- * 
- * 负责处理行内标记（加粗、斜体、删除线等）和块级标记（标题、列表、引用）的动画显示/隐藏
- * 
- * 工作原理：
- * 1. 遍历语法树，找到所有标记节点
- * 2. 根据光标位置决定是否显示标记
- * 3. 应用 CSS 类触发动画
+ * Live Preview Plugin
+ *
+ * Handles animated show/hide of inline marks (bold, italic, strikethrough, etc.)
+ * and block marks (headings, lists, quotes)
+ *
+ * How it works:
+ * 1. Traverse syntax tree to find all mark nodes
+ * 2. Decide whether to show marks based on cursor position
+ * 3. Apply CSS classes to trigger animations
  */
 export const livePreviewPlugin = ViewPlugin.fromClass(
   class {
@@ -56,7 +62,7 @@ export const livePreviewPlugin = ViewPlugin.fromClass(
       const decorations: Range<Decoration>[] = [];
       const { state } = view;
 
-      // 获取所有活动行
+      // Get all active lines
       const activeLines = new Set<number>();
       for (const range of state.selection.ranges) {
         const startLine = state.doc.lineAt(range.from).number;
@@ -68,51 +74,55 @@ export const livePreviewPlugin = ViewPlugin.fromClass(
 
       const isDrag = state.field(mouseSelectingField, false);
 
-      // 遍历语法树
+      // Traverse syntax tree
       syntaxTree(state).iterate({
         enter: (node) => {
-          // 只处理标记节点
+          // Only handle mark nodes
           const markTypes = [
-            'EmphasisMark', // * 或 _
+            'EmphasisMark', // * or _
             'StrikethroughMark', // ~~
             'CodeMark', // `
             'HeaderMark', // #
-            'ListMark', // - 或 *
+            'ListMark', // - or *
             'QuoteMark', // >
           ];
 
           if (!markTypes.includes(node.name)) return;
 
-          // 跳过代码块内的标记
+          // Skip marks inside code blocks
           if (isInsideSkippedParent(node)) {
             return;
           }
 
-          // 跳过数学公式的 CodeMark（由 mathPlugin 处理）
+          // Skip CodeMark for math formulas (handled by mathPlugin)
           if (node.name === 'CodeMark') {
             const parent = node.node.parent;
             if (parent && parent.name === 'InlineCode') {
               const text = state.doc.sliceString(parent.from, parent.to);
-              // 如果是数学公式格式 `$...$`，跳过
+              // If it's math formula format `$...$`, skip
               if (text.startsWith('`$') && text.endsWith('$`')) {
                 return;
               }
             }
           }
 
-          const isBlock = ['HeaderMark', 'ListMark', 'QuoteMark'].includes(node.name);
+          const isBlock = ['HeaderMark', 'ListMark', 'QuoteMark'].includes(
+            node.name
+          );
           const lineNum = state.doc.lineAt(node.from).number;
           const isActiveLine = activeLines.has(lineNum);
 
           if (isBlock) {
-            // 块级标记：使用 fontSize 动画
+            // Block marks: use fontSize animation
             const cls =
               isActiveLine && !isDrag
                 ? 'cm-formatting-block cm-formatting-block-visible'
                 : 'cm-formatting-block';
-            decorations.push(Decoration.mark({ class: cls }).range(node.from, node.to));
+            decorations.push(
+              Decoration.mark({ class: cls }).range(node.from, node.to)
+            );
           } else {
-            // 行内标记：使用 max-width 动画
+            // Inline marks: use max-width animation
             if (node.from >= node.to) return;
 
             const isTouched = shouldShowSource(state, node.from, node.to);
@@ -121,7 +131,9 @@ export const livePreviewPlugin = ViewPlugin.fromClass(
                 ? 'cm-formatting-inline cm-formatting-inline-visible'
                 : 'cm-formatting-inline';
 
-            decorations.push(Decoration.mark({ class: cls }).range(node.from, node.to));
+            decorations.push(
+              Decoration.mark({ class: cls }).range(node.from, node.to)
+            );
           }
         },
       });

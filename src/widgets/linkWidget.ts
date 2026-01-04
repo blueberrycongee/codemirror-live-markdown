@@ -1,44 +1,44 @@
 /**
- * 链接 Widget
+ * Link Widget
  *
- * 渲染 Markdown 链接预览，支持标准链接和 Wiki 链接
+ * Renders Markdown link preview, supports standard links and Wiki links
  */
 
 import { WidgetType } from '@codemirror/view';
 
 /**
- * 链接数据接口
+ * Link data interface
  */
 export interface LinkData {
-  /** 链接文本 */
+  /** Link text */
   text: string;
-  /** 链接地址 */
+  /** Link URL */
   url: string;
-  /** 标题 */
+  /** Title */
   title?: string;
-  /** 是否为 Wiki 链接 */
+  /** Whether it's a Wiki link */
   isWikiLink: boolean;
 }
 
 /**
- * 链接选项接口
+ * Link options interface
  */
 export interface LinkOptions {
-  /** 是否在新标签页打开，默认 true */
+  /** Whether to open in new tab, default true */
   openInNewTab?: boolean;
-  /** Wiki 链接点击处理器 */
+  /** Wiki link click handler */
   onWikiLinkClick?: (link: string) => void;
-  /** 是否显示链接预览，默认 false */
+  /** Whether to show link preview, default false */
   showPreview?: boolean;
 }
 
 /**
- * 危险协议列表
+ * Dangerous protocols list
  */
 const DANGEROUS_PROTOCOLS = ['javascript:', 'vbscript:', 'data:text/html'];
 
 /**
- * 检查 URL 是否安全
+ * Check if URL is safe
  */
 function isSafeUrl(url: string): boolean {
   const lowerUrl = url.toLowerCase().trim();
@@ -46,13 +46,13 @@ function isSafeUrl(url: string): boolean {
 }
 
 /**
- * 清理 URL
+ * Sanitize URL
  */
 function sanitizeUrl(url: string): string {
   if (!isSafeUrl(url)) {
     return '';
   }
-  // 编码特殊字符
+  // Encode special characters
   try {
     return encodeURI(url);
   } catch {
@@ -61,7 +61,7 @@ function sanitizeUrl(url: string): string {
 }
 
 /**
- * 链接 Widget 类
+ * Link Widget class
  */
 export class LinkWidget extends WidgetType {
   constructor(
@@ -72,7 +72,7 @@ export class LinkWidget extends WidgetType {
   }
 
   /**
-   * 判断两个 Widget 是否相等
+   * Check if two widgets are equal
    */
   eq(other: LinkWidget): boolean {
     return (
@@ -83,7 +83,7 @@ export class LinkWidget extends WidgetType {
   }
 
   /**
-   * 渲染为 DOM 元素
+   * Render to DOM element
    */
   toDOM(): HTMLElement {
     const { text, url, title, isWikiLink } = this.data;
@@ -98,18 +98,18 @@ export class LinkWidget extends WidgetType {
     anchor.title = title || '';
 
     if (isWikiLink) {
-      // Wiki 链接样式
+      // Wiki link style
       anchor.className = 'cm-link-widget cm-wikilink-widget';
       anchor.href = '';
 
-      // Wiki 链接点击处理
+      // Wiki link click handler
       anchor.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
         onWikiLinkClick?.(url);
       });
     } else {
-      // 标准链接
+      // Standard link
       anchor.className = 'cm-link-widget';
 
       const safeUrl = sanitizeUrl(url);
@@ -123,7 +123,7 @@ export class LinkWidget extends WidgetType {
       }
     }
 
-    // 链接预览
+    // Link preview
     if (showPreview && !isWikiLink) {
       let previewEl: HTMLElement | null = null;
 
@@ -146,9 +146,9 @@ export class LinkWidget extends WidgetType {
   }
 
   /**
-   * 是否忽略事件
+   * Whether to ignore events
    *
-   * 返回 false 允许点击进入编辑模式
+   * Return false to allow click to enter edit mode
    */
   ignoreEvent(): boolean {
     return false;
@@ -156,7 +156,7 @@ export class LinkWidget extends WidgetType {
 }
 
 /**
- * 创建链接 Widget
+ * Create link widget
  */
 export function createLinkWidget(
   data: LinkData,

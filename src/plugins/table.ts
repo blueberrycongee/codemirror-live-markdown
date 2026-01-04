@@ -1,11 +1,11 @@
 /**
- * 表格插件
+ * Table Plugin
  *
- * 实现 Markdown 表格的实时预览：
- * - 光标不在表格内 → 渲染为 HTML 表格
- * - 光标进入表格 → 显示源码，可直接编辑
+ * Implements live preview for Markdown tables:
+ * - Cursor outside table → render as HTML table
+ * - Cursor inside table → show source, editable
  *
- * 使用 StateField 因为 block decorations 必须通过 StateField 提供
+ * Uses StateField because block decorations must be provided via StateField
  */
 
 import { syntaxTree } from '@codemirror/language';
@@ -17,7 +17,7 @@ import { parseMarkdownTable } from '../utils/tableParser';
 import { createTableWidget } from '../widgets/tableWidget';
 
 /**
- * 构建表格装饰
+ * Build table decorations
  */
 function buildTableDecorations(state: EditorState): DecorationSet {
   const decorations: Range<Decoration>[] = [];
@@ -29,19 +29,19 @@ function buildTableDecorations(state: EditorState): DecorationSet {
         const tableSource = state.doc.sliceString(node.from, node.to);
         const tableData = parseMarkdownTable(tableSource);
 
-        // 无效表格不渲染
+        // Don't render invalid tables
         if (!tableData) return;
 
         const isTouched = shouldShowSource(state, node.from, node.to);
 
         if (!isTouched && !isDrag) {
-          // 渲染模式：显示 HTML 表格
+          // Render mode: show HTML table
           const widget = createTableWidget(tableData);
           decorations.push(
             Decoration.replace({ widget, block: true }).range(node.from, node.to)
           );
         } else {
-          // 编辑模式：为表格每行添加背景色
+          // Edit mode: add background to each table line
           for (let pos = node.from; pos <= node.to; ) {
             const line = state.doc.lineAt(pos);
             decorations.push(
@@ -58,9 +58,9 @@ function buildTableDecorations(state: EditorState): DecorationSet {
 }
 
 /**
- * 表格 StateField
+ * Table StateField
  *
- * 管理表格的装饰状态
+ * Manages table decoration state
  */
 export const tableField = StateField.define<DecorationSet>({
   create(state) {
@@ -68,12 +68,12 @@ export const tableField = StateField.define<DecorationSet>({
   },
 
   update(deco, tr) {
-    // 文档变化或重新配置时重建
+    // Rebuild on document or config change
     if (tr.docChanged || tr.reconfigured) {
       return buildTableDecorations(tr.state);
     }
 
-    // 拖拽状态变化时重建
+    // Rebuild on drag state change
     const isDragging = tr.state.field(mouseSelectingField, false);
     const wasDragging = tr.startState.field(mouseSelectingField, false);
 
@@ -81,12 +81,12 @@ export const tableField = StateField.define<DecorationSet>({
       return buildTableDecorations(tr.state);
     }
 
-    // 拖拽中保持不变
+    // Keep unchanged during drag
     if (isDragging) {
       return deco;
     }
 
-    // 选区变化时重建
+    // Rebuild on selection change
     if (tr.selection) {
       return buildTableDecorations(tr.state);
     }

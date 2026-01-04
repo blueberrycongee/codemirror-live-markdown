@@ -1,40 +1,40 @@
 /**
- * 数学公式渲染缓存
- * 
- * 避免重复渲染相同的公式，提升性能
+ * Math Formula Render Cache
+ *
+ * Avoids re-rendering identical formulas, improves performance
  */
 
 /**
- * 渲染缓存
- * key 格式: "inline:公式内容" 或 "block:公式内容"
+ * Render cache
+ * Key format: "inline:formula" or "block:formula"
  */
 const cache = new Map<string, string>();
 
 /**
- * 渲染数学公式
- * 
- * @param source - 公式源码（不包含 $ 符号）
- * @param displayMode - true = 块级公式, false = 行内公式
- * @returns 渲染后的 HTML 字符串
- * 
+ * Render math formula
+ *
+ * @param source - Formula source (without $ symbols)
+ * @param displayMode - true = block formula, false = inline formula
+ * @returns Rendered HTML string
+ *
  * @example
  * ```typescript
- * renderMath('E = mc^2', false) // 行内公式
- * renderMath('\\int_0^\\infty e^{-x^2} dx', true) // 块级公式
+ * renderMath('E = mc^2', false) // Inline formula
+ * renderMath('\\int_0^\\infty e^{-x^2} dx', true) // Block formula
  * ```
  */
 export function renderMath(source: string, displayMode: boolean): string {
   const key = `${displayMode ? 'block' : 'inline'}:${source}`;
-  
+
   if (cache.has(key)) {
     return cache.get(key)!;
   }
 
-  // 动态导入 KaTeX（用户可能没有安装）
+  // Dynamic import KaTeX (user may not have installed)
   try {
-    // @ts-expect-error - KaTeX 是 peer dependency
+    // @ts-expect-error - KaTeX is peer dependency
     const katex = window.katex;
-    
+
     if (!katex) {
       throw new Error('KaTeX not found. Please install katex package.');
     }
@@ -55,9 +55,9 @@ export function renderMath(source: string, displayMode: boolean): string {
 }
 
 /**
- * 清空渲染缓存
- * 
- * 在 KaTeX 版本更新或配置变化时调用
+ * Clear render cache
+ *
+ * Call when KaTeX version updates or config changes
  */
 export function clearMathCache(): void {
   cache.clear();

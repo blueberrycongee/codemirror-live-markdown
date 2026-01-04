@@ -1,31 +1,37 @@
 /**
- * 数学公式插件
+ * Math Formula Plugin
  *
- * 支持行内公式 (`$...$`) 和块级公式 (```math ... ```)
- * 使用 KaTeX 渲染，支持编辑模式切换
+ * Supports inline formulas (`$...$`) and block formulas (```math ... ```)
+ * Uses KaTeX for rendering, supports edit mode switching
  *
- * 工作原理：
- * 1. 遍历语法树，找到数学公式节点
- * 2. 根据光标位置决定显示渲染结果还是源码
- * 3. 使用 Widget 渲染公式，使用 Mark 装饰编辑模式
+ * How it works:
+ * 1. Traverse syntax tree to find math formula nodes
+ * 2. Decide whether to show rendered result or source based on cursor position
+ * 3. Use Widget for rendering, use Mark decoration for edit mode
  *
- * 注意：
- * - 行内公式使用 ViewPlugin（Decoration.replace 不带 block）
- * - 块级公式使用 StateField（block decorations 必须通过 StateField 提供）
+ * Note:
+ * - Inline formulas use ViewPlugin (Decoration.replace without block)
+ * - Block formulas use StateField (block decorations must be provided via StateField)
  */
 
 import { syntaxTree } from '@codemirror/language';
 import { EditorState, Range, StateField } from '@codemirror/state';
-import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate } from '@codemirror/view';
+import {
+  Decoration,
+  DecorationSet,
+  EditorView,
+  ViewPlugin,
+  ViewUpdate,
+} from '@codemirror/view';
 import { shouldShowSource } from '../core/shouldShowSource';
 import { mouseSelectingField } from '../core/mouseSelecting';
 import { checkUpdateAction } from '../core/pluginUpdateHelper';
 import { createMathWidget } from '../widgets/mathWidget';
 
 /**
- * 行内数学公式 ViewPlugin
+ * Inline math formula ViewPlugin
  *
- * 处理 `$...$` 格式的行内公式
+ * Handles `$...$` format inline formulas
  */
 export const mathPlugin = ViewPlugin.fromClass(
   class {
@@ -48,20 +54,29 @@ export const mathPlugin = ViewPlugin.fromClass(
 
       syntaxTree(state).iterate({
         enter: (node) => {
-          // 只处理行内公式
+          // Only handle inline formulas
           if (node.name === 'InlineCode') {
             const fullText = state.doc.sliceString(node.from, node.to);
 
-            if (fullText.startsWith('`$') && fullText.endsWith('$`') && fullText.length > 4) {
+            if (
+              fullText.startsWith('`$') &&
+              fullText.endsWith('$`') &&
+              fullText.length > 4
+            ) {
               const source = fullText.slice(2, -2);
               const isTouched = shouldShowSource(state, node.from, node.to);
 
               if (!isTouched && !isDrag) {
                 const widget = createMathWidget(source, false);
-                decorations.push(Decoration.replace({ widget }).range(node.from, node.to));
+                decorations.push(
+                  Decoration.replace({ widget }).range(node.from, node.to)
+                );
               } else {
                 decorations.push(
-                  Decoration.mark({ class: 'cm-math-source' }).range(node.from, node.to)
+                  Decoration.mark({ class: 'cm-math-source' }).range(
+                    node.from,
+                    node.to
+                  )
                 );
               }
             }
@@ -78,7 +93,7 @@ export const mathPlugin = ViewPlugin.fromClass(
 );
 
 /**
- * 构建块级数学公式装饰
+ * Build block math formula decorations
  */
 function buildBlockMathDecorations(state: EditorState): DecorationSet {
   const decorations: Range<Decoration>[] = [];
@@ -93,20 +108,29 @@ function buildBlockMathDecorations(state: EditorState): DecorationSet {
 
           if (lang === 'math') {
             const codeText = node.node.getChild('CodeText');
-            const source = codeText ? state.doc.sliceString(codeText.from, codeText.to).trim() : '';
+            const source = codeText
+              ? state.doc.sliceString(codeText.from, codeText.to).trim()
+              : '';
             const isTouched = shouldShowSource(state, node.from, node.to);
 
             if (!isTouched && !isDrag) {
-              // 显示渲染结果
+              // Show rendered result
               const widget = createMathWidget(source, true);
               decorations.push(
-                Decoration.replace({ widget, block: true }).range(node.from, node.to)
+                Decoration.replace({ widget, block: true }).range(
+                  node.from,
+                  node.to
+                )
               );
             } else {
-              // 编辑模式：为每一行添加背景色
+              // Edit mode: add background to each line
               for (let pos = node.from; pos <= node.to; ) {
                 const line = state.doc.lineAt(pos);
-                decorations.push(Decoration.line({ class: 'cm-math-source-block' }).range(line.from));
+                decorations.push(
+                  Decoration.line({ class: 'cm-math-source-block' }).range(
+                    line.from
+                  )
+                );
                 pos = line.to + 1;
               }
             }
@@ -120,10 +144,10 @@ function buildBlockMathDecorations(state: EditorState): DecorationSet {
 }
 
 /**
- * 块级数学公式 StateField
+ * Block math formula StateField
  *
- * 处理 ```math ... ``` 格式的块级公式
- * 必须使用 StateField 因为 block decorations 不能通过 ViewPlugin 提供
+ * Handles ```math ... ``` format block formulas
+ * Must use StateField because block decorations cannot be provided via ViewPlugin
  */
 export const blockMathField = StateField.define<DecorationSet>({
   create(state) {

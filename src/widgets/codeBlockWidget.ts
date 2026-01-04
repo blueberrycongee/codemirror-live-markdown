@@ -1,37 +1,37 @@
 /**
- * 代码块 Widget
+ * Code Block Widget
  *
- * 渲染语法高亮的代码块，支持复制按钮和行号
- * 支持精确的点击位置映射
+ * Renders syntax-highlighted code blocks with copy button and line numbers
+ * Supports precise click position mapping
  */
 
 import { WidgetType } from '@codemirror/view';
 import { highlightCode } from '../utils/codeHighlight';
 
 /**
- * 代码块数据接口
+ * Code block data interface
  */
 export interface CodeBlockData {
-  /** 源代码 */
+  /** Source code */
   code: string;
-  /** 语言标识 */
+  /** Language identifier */
   language: string;
-  /** 是否显示行号 */
+  /** Whether to show line numbers */
   showLineNumbers: boolean;
-  /** 是否显示复制按钮 */
+  /** Whether to show copy button */
   showCopyButton: boolean;
-  /** 代码块在文档中的起始位置 */
+  /** Code block start position in document */
   from: number;
-  /** 代码块在文档中的结束位置 */
+  /** Code block end position in document */
   to: number;
-  /** 代码内容的起始位置（跳过 ```language） */
+  /** Code content start position (after ```language) */
   codeFrom: number;
-  /** 每行的起始位置（相对于文档） */
+  /** Start position of each line (relative to document) */
   lineStarts: number[];
 }
 
 /**
- * 代码块 Widget 类
+ * Code Block Widget class
  */
 export class CodeBlockWidget extends WidgetType {
   constructor(readonly data: CodeBlockData) {
@@ -39,7 +39,7 @@ export class CodeBlockWidget extends WidgetType {
   }
 
   /**
-   * 判断两个 Widget 是否相等
+   * Check if two widgets are equal
    */
   eq(other: CodeBlockWidget): boolean {
     return (
@@ -52,14 +52,14 @@ export class CodeBlockWidget extends WidgetType {
   }
 
   /**
-   * 渲染为 DOM 元素
+   * Render to DOM element
    */
   toDOM(): HTMLElement {
     const { code, language, showLineNumbers, showCopyButton, from, lineStarts } =
       this.data;
     const widgetData = this.data;
 
-    // 容器
+    // Container
     const container = document.createElement('div');
     container.className = 'cm-codeblock-widget';
     container.dataset.from = String(from);
@@ -70,22 +70,22 @@ export class CodeBlockWidget extends WidgetType {
       container.className += ' cm-codeblock-line-numbers';
     }
 
-    // 添加点击处理器 - 在捕获阶段处理，阻止事件传播
+    // Add click handler - handle in capture phase, stop propagation
     container.addEventListener(
       'mousedown',
       (event) => {
         const target = event.target as HTMLElement;
 
-        // 复制按钮不处理
+        // Don't handle copy button
         if (target.closest('.cm-codeblock-copy')) {
           return;
         }
 
-        // 阻止事件传播，防止 CodeMirror 处理
+        // Stop propagation to prevent CodeMirror from handling
         event.stopPropagation();
         event.preventDefault();
 
-        // 查找点击的行
+        // Find clicked line
         const lineEl = target.closest('.cm-codeblock-line');
         let targetPos = widgetData.from;
 
@@ -105,15 +105,15 @@ export class CodeBlockWidget extends WidgetType {
           );
 
           if (lineIndex === -1) {
-            // 点击开始 fence 行
+            // Clicked on start fence line
             targetPos = widgetData.from;
           } else if (lineIndex === -2) {
-            // 点击结束 fence 行
+            // Clicked on end fence line
             targetPos = widgetData.to;
           } else if (lineIndex >= 0 && lineIndex < widgetData.lineStarts.length) {
             targetPos = widgetData.lineStarts[lineIndex];
 
-            // 计算列位置 - 使用精确测量
+            // Calculate column position using precise measurement
             const charOffset = this.measureClickOffset(
               lineEl as HTMLElement,
               event.clientX,
@@ -125,7 +125,7 @@ export class CodeBlockWidget extends WidgetType {
 
         console.log('[CodeBlock Widget] targetPos:', targetPos);
 
-        // 触发自定义事件，让 codeBlock.ts 中的处理器设置光标
+        // Dispatch custom event for codeBlock.ts handler to set cursor
         container.dispatchEvent(
           new CustomEvent('codeblock-click', {
             bubbles: true,
@@ -133,14 +133,14 @@ export class CodeBlockWidget extends WidgetType {
           })
         );
       },
-      true // 捕获阶段
+      true // Capture phase
     );
 
     if (showLineNumbers) {
       container.className += ' cm-codeblock-line-numbers';
     }
 
-    // 复制按钮
+    // Copy button
     if (showCopyButton) {
       const copyBtn = document.createElement('button');
       copyBtn.type = 'button';
@@ -172,49 +172,49 @@ export class CodeBlockWidget extends WidgetType {
       container.appendChild(copyBtn);
     }
 
-    // 代码区域
+    // Code area
     const pre = document.createElement('pre');
     const codeEl = document.createElement('code');
 
-    // 开始 fence 行
+    // Start fence line
     const openFence = `\`\`\`${language || ''}`;
-    
-    // 用原始代码分割行，确保行数和 lineStarts 一致
+
+    // Split original code by lines to ensure line count matches lineStarts
     const originalLines = code.split('\n');
-    
-    // 高亮整个代码块
+
+    // Highlight entire code block
     const result = highlightCode(code, language || undefined);
     const highlightedHtml = result.html;
-    
-    // 尝试按换行符分割高亮后的 HTML
-    // 如果行数不匹配，则对每行单独高亮
+
+    // Try to split highlighted HTML by newlines
+    // If line count doesn't match, highlight each line separately
     let highlightedLines = highlightedHtml.split('\n');
-    
+
     if (highlightedLines.length !== originalLines.length) {
-      // 行数不匹配，对每行单独高亮
-      highlightedLines = originalLines.map(line => {
+      // Line count mismatch, highlight each line separately
+      highlightedLines = originalLines.map((line) => {
         const lineResult = highlightCode(line, language || undefined);
         return lineResult.html || this.escapeHtml(line) || ' ';
       });
     }
 
-    // 构建所有行：fence + 代码 + fence
+    // Build all lines: fence + code + fence
     const allLines: string[] = [];
-    
-    // 开始 fence（索引 -1 表示 fence 行）
+
+    // Start fence (index -1 indicates fence line)
     allLines.push(
       `<span class="cm-codeblock-line cm-codeblock-fence" data-line-index="-1">${this.escapeHtml(openFence)}</span>`
     );
-    
-    // 代码行 - 使用原始行数
+
+    // Code lines - use original line count
     originalLines.forEach((_, index) => {
       const lineHtml = highlightedLines[index] || ' ';
       allLines.push(
         `<span class="cm-codeblock-line" data-line-index="${index}">${lineHtml || ' '}</span>`
       );
     });
-    
-    // 结束 fence（索引 -2 表示结束 fence）
+
+    // End fence (index -2 indicates end fence)
     allLines.push(
       `<span class="cm-codeblock-line cm-codeblock-fence" data-line-index="-2">\`\`\`</span>`
     );
@@ -228,7 +228,7 @@ export class CodeBlockWidget extends WidgetType {
   }
 
   /**
-   * HTML 转义
+   * HTML escape
    */
   private escapeHtml(text: string): string {
     return text
@@ -238,14 +238,14 @@ export class CodeBlockWidget extends WidgetType {
   }
 
   /**
-   * 精确测量点击位置对应的字符偏移
-   * 
-   * 使用 Canvas 测量文本宽度，找到点击位置对应的字符
-   * 
-   * @param lineEl - 行元素
-   * @param clientX - 点击的 X 坐标
-   * @param sourceText - 源码中的行文本（用于限制最大偏移）
-   * @returns 字符偏移量
+   * Precisely measure click position to character offset
+   *
+   * Uses Canvas to measure text width and find character at click position
+   *
+   * @param lineEl - Line element
+   * @param clientX - Click X coordinate
+   * @param sourceText - Source line text (to limit max offset)
+   * @returns Character offset
    */
   private measureClickOffset(
     lineEl: HTMLElement,
@@ -254,61 +254,61 @@ export class CodeBlockWidget extends WidgetType {
   ): number {
     const rect = lineEl.getBoundingClientRect();
     const clickX = clientX - rect.left;
-    
-    // 获取行的 padding
+
+    // Get line padding
     const style = window.getComputedStyle(lineEl);
     const paddingLeft = parseFloat(style.paddingLeft) || 0;
-    
-    // 调整点击位置，减去 padding
+
+    // Adjust click position by subtracting padding
     const textClickX = clickX - paddingLeft;
-    
+
     if (textClickX <= 0) {
       return 0;
     }
-    
-    // 使用 Canvas 测量文本宽度
+
+    // Use Canvas to measure text width
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    
+
     if (!ctx) {
-      // 降级：使用简单估算
+      // Fallback: use simple estimation
       const fontSize = parseFloat(style.fontSize) || 16;
       const charWidth = fontSize * 0.6;
       const charOffset = Math.floor(textClickX / charWidth);
       return Math.min(charOffset, sourceText.length);
     }
-    
-    // 设置与行元素相同的字体
+
+    // Set same font as line element
     ctx.font = `${style.fontSize} ${style.fontFamily}`;
-    
-    // 二分查找点击位置对应的字符
-    // 使用源码文本进行测量，确保与源码位置一致
+
+    // Binary search for character at click position
+    // Use source text for measurement to ensure consistency with source position
     const text = sourceText;
     let left = 0;
     let right = text.length;
-    
+
     while (left < right) {
       const mid = Math.floor((left + right + 1) / 2);
       const width = ctx.measureText(text.substring(0, mid)).width;
-      
+
       if (width <= textClickX) {
         left = mid;
       } else {
         right = mid - 1;
       }
     }
-    
-    // 检查是否更接近下一个字符
+
+    // Check if closer to next character
     if (left < text.length) {
       const currentWidth = ctx.measureText(text.substring(0, left)).width;
       const nextWidth = ctx.measureText(text.substring(0, left + 1)).width;
       const midPoint = (currentWidth + nextWidth) / 2;
-      
+
       if (textClickX > midPoint) {
         left++;
       }
     }
-    
+
     console.log('[CodeBlock Widget] measureClickOffset', {
       clickX,
       paddingLeft,
@@ -316,24 +316,24 @@ export class CodeBlockWidget extends WidgetType {
       sourceText: sourceText.substring(0, 30) + '...',
       charOffset: left,
     });
-    
+
     return Math.min(left, sourceText.length);
   }
 
   /**
-   * 是否忽略事件
+   * Whether to ignore events
    *
-   * 对于 mousedown 事件返回 true，阻止 CodeMirror 默认处理
-   * 我们会在 codeBlock.ts 中用 domEventHandlers 自己处理点击
+   * Return true for mousedown to prevent CodeMirror default handling
+   * We handle clicks ourselves in codeBlock.ts with domEventHandlers
    */
   ignoreEvent(event: Event): boolean {
-    // 复制按钮的点击不忽略，让它正常工作
+    // Don't ignore copy button clicks, let it handle itself
     if (event.type === 'mousedown') {
       const target = event.target as HTMLElement;
       if (target.closest('.cm-codeblock-copy')) {
-        return true; // 忽略，让复制按钮自己处理
+        return true; // Ignore, let copy button handle it
       }
-      // 其他 mousedown 事件也忽略，防止 CodeMirror 先处理
+      // Ignore other mousedown events to prevent CodeMirror from handling first
       return true;
     }
     return false;
@@ -341,7 +341,7 @@ export class CodeBlockWidget extends WidgetType {
 }
 
 /**
- * 创建代码块 Widget
+ * Create code block widget
  */
 export function createCodeBlockWidget(data: CodeBlockData): CodeBlockWidget {
   return new CodeBlockWidget(data);

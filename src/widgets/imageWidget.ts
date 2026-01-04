@@ -1,44 +1,44 @@
 /**
- * 图片 Widget
+ * Image Widget
  *
- * 渲染 Markdown 图片预览，支持加载状态和错误处理
+ * Renders Markdown image preview with loading state and error handling
  */
 
 import { WidgetType } from '@codemirror/view';
 import { loadImage } from '../utils/imageLoader';
 
 /**
- * 图片数据接口
+ * Image data interface
  */
 export interface ImageData {
-  /** 图片源地址 */
+  /** Image source URL */
   src: string;
-  /** 替代文本 */
+  /** Alt text */
   alt: string;
-  /** 标题 */
+  /** Title */
   title?: string;
-  /** 是否为本地图片 */
+  /** Whether it's a local image */
   isLocal: boolean;
 }
 
 /**
- * 图片选项接口
+ * Image options interface
  */
 export interface ImageOptions {
-  /** 最大宽度，默认 '100%' */
+  /** Max width, default '100%' */
   maxWidth?: string;
-  /** 是否显示 alt 文本，默认 true */
+  /** Whether to show alt text, default true */
   showAlt?: boolean;
-  /** 是否显示加载状态，默认 true */
+  /** Whether to show loading state, default true */
   showLoading?: boolean;
-  /** 图片加载失败时的占位符 */
+  /** Placeholder for failed image load */
   errorPlaceholder?: string;
-  /** 本地图片基础路径 */
+  /** Base path for local images */
   basePath?: string;
 }
 
 /**
- * 图片 Widget 类
+ * Image Widget class
  */
 export class ImageWidget extends WidgetType {
   constructor(
@@ -49,7 +49,7 @@ export class ImageWidget extends WidgetType {
   }
 
   /**
-   * 判断两个 Widget 是否相等
+   * Check if two widgets are equal
    */
   eq(other: ImageWidget): boolean {
     return (
@@ -60,7 +60,7 @@ export class ImageWidget extends WidgetType {
   }
 
   /**
-   * 渲染为 DOM 元素
+   * Render to DOM element
    */
   toDOM(): HTMLElement {
     const { src, alt, title } = this.data;
@@ -72,11 +72,11 @@ export class ImageWidget extends WidgetType {
       basePath = '',
     } = this.options;
 
-    // 容器
+    // Container
     const container = document.createElement('div');
     container.className = 'cm-image-widget';
 
-    // 显示加载状态
+    // Show loading state
     if (showLoading) {
       const loading = document.createElement('div');
       loading.className = 'cm-image-loading';
@@ -87,16 +87,16 @@ export class ImageWidget extends WidgetType {
       container.appendChild(loading);
     }
 
-    // 异步加载图片
+    // Load image asynchronously
     loadImage(src, { basePath }).then((result) => {
-      // 移除加载状态
+      // Remove loading state
       const loading = container.querySelector('.cm-image-loading');
       if (loading) {
         loading.remove();
       }
 
       if (result.loaded) {
-        // 创建图片元素
+        // Create image element
         const img = document.createElement('img');
         img.src = result.src;
         img.alt = alt;
@@ -106,7 +106,7 @@ export class ImageWidget extends WidgetType {
 
         container.appendChild(img);
 
-        // 显示 alt 文本
+        // Show alt text
         if (showAlt && alt) {
           const altEl = document.createElement('div');
           altEl.className = 'cm-image-alt';
@@ -114,7 +114,7 @@ export class ImageWidget extends WidgetType {
           container.appendChild(altEl);
         }
       } else {
-        // 显示错误状态
+        // Show error state
         const error = document.createElement('div');
         error.className = 'cm-image-error';
         error.innerHTML = `
@@ -129,9 +129,9 @@ export class ImageWidget extends WidgetType {
   }
 
   /**
-   * 是否忽略事件
+   * Whether to ignore events
    *
-   * 返回 false 允许点击进入编辑模式
+   * Return false to allow click to enter edit mode
    */
   ignoreEvent(): boolean {
     return false;
@@ -139,7 +139,7 @@ export class ImageWidget extends WidgetType {
 }
 
 /**
- * 创建图片 Widget
+ * Create image widget
  */
 export function createImageWidget(
   data: ImageData,

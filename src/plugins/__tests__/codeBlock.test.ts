@@ -1,5 +1,5 @@
 /**
- * 代码块插件测试
+ * Code Block Plugin Tests
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -11,7 +11,7 @@ import { mouseSelectingField } from '../../core/mouseSelecting';
 import { collapseOnSelectionFacet } from '../../core/facets';
 
 /**
- * 创建测试用的 EditorView
+ * Create test EditorView
  */
 function createEditor(
   doc: string,
@@ -36,7 +36,7 @@ function createEditor(
 }
 
 /**
- * 清理 EditorView
+ * Cleanup EditorView
  */
 function cleanup(view: EditorView): void {
   view.destroy();
@@ -79,10 +79,10 @@ describe('codeBlockField', () => {
   describe('detection', () => {
     it('should detect fenced code block', () => {
       const doc = 'Hello\n\n```javascript\nconst x = 1;\n```';
-      // 光标在 "Hello" 位置，代码块外
+      // Cursor at "Hello", outside code block
       view = createEditor(doc, 0);
 
-      // 光标在代码块外，应该有 widget
+      // Cursor outside code block, should have widget
       const widget = view.dom.querySelector('.cm-codeblock-widget');
       expect(widget).not.toBeNull();
 
@@ -93,9 +93,9 @@ describe('codeBlockField', () => {
       const doc = 'Text\n\n```python\nprint("hello")\n```';
       view = createEditor(doc, 0);
 
-      // 检查是否正确识别了语言
+      // Check if language was correctly identified
       const content = view.dom.innerHTML;
-      // Widget 应该包含语言标签
+      // Widget should contain language label
       expect(content).toContain('python');
 
       cleanup(view);
@@ -105,7 +105,7 @@ describe('codeBlockField', () => {
       const doc = 'Text\n\n```\nsome code\n```';
       view = createEditor(doc, 0);
 
-      // 应该有 widget
+      // Should have widget
       const widget = view.dom.querySelector('.cm-codeblock-widget');
       expect(widget).not.toBeNull();
 
@@ -116,7 +116,7 @@ describe('codeBlockField', () => {
       const doc = 'Text\n\n```math\nx^2 + y^2 = z^2\n```';
       view = createEditor(doc, 0);
 
-      // math 代码块不应该被 codeBlockField 处理，不应该有 widget
+      // Math code blocks should not be handled by codeBlockField, no widget
       const widget = view.dom.querySelector('.cm-codeblock-widget');
       expect(widget).toBeNull();
 
@@ -127,10 +127,10 @@ describe('codeBlockField', () => {
   describe('rendering mode', () => {
     it('should show widget when cursor outside', () => {
       const doc = 'Hello\n\n```javascript\nconst x = 1;\n```\n\nWorld';
-      // 光标在 "Hello" 位置
+      // Cursor at "Hello"
       view = createEditor(doc, 0);
 
-      // 应该显示 widget
+      // Should show widget
       const widget = view.dom.querySelector('.cm-codeblock-widget');
       expect(widget).not.toBeNull();
 
@@ -139,10 +139,10 @@ describe('codeBlockField', () => {
 
     it('should show source when cursor inside', () => {
       const doc = '```javascript\nconst x = 1;\n```';
-      // 光标在代码块内部
+      // Cursor inside code block
       view = createEditor(doc, 18);
 
-      // 应该显示源码模式（行装饰）
+      // Should show source mode (line decoration)
       const sourceLine = view.dom.querySelector('.cm-codeblock-source');
       expect(sourceLine).not.toBeNull();
 
@@ -151,10 +151,10 @@ describe('codeBlockField', () => {
 
     it('should show source when cursor on fence', () => {
       const doc = '```javascript\nconst x = 1;\n```';
-      // 光标在开始 fence 上
+      // Cursor on start fence
       view = createEditor(doc, 5);
 
-      // 应该显示源码模式
+      // Should show source mode
       const sourceLine = view.dom.querySelector('.cm-codeblock-source');
       expect(sourceLine).not.toBeNull();
 
@@ -165,15 +165,15 @@ describe('codeBlockField', () => {
   describe('updates', () => {
     it('should update on document change', () => {
       const doc = 'Hello\n\n```javascript\nconst x = 1;\n```';
-      // 光标在 "Hello" 位置，代码块外
+      // Cursor at "Hello", outside code block
       view = createEditor(doc, 0);
 
-      // 修改文档（代码块内容）
+      // Modify document (code block content)
       view.dispatch({
         changes: { from: 21, to: 33, insert: 'let y = 2;' },
       });
 
-      // 应该仍然有 widget
+      // Should still have widget
       const widget = view.dom.querySelector('.cm-codeblock-widget');
       expect(widget).not.toBeNull();
 
@@ -184,16 +184,16 @@ describe('codeBlockField', () => {
       const doc = 'Hello\n\n```javascript\nconst x = 1;\n```';
       view = createEditor(doc, 0);
 
-      // 初始状态应该显示 widget
+      // Initial state should show widget
       const widget = view.dom.querySelector('.cm-codeblock-widget');
       expect(widget).not.toBeNull();
 
-      // 移动光标到代码块内
+      // Move cursor into code block
       view.dispatch({
         selection: { anchor: 20 },
       });
 
-      // 应该切换到源码模式
+      // Should switch to source mode
       const sourceLine = view.dom.querySelector('.cm-codeblock-source');
       expect(sourceLine).not.toBeNull();
 
@@ -203,10 +203,11 @@ describe('codeBlockField', () => {
 
   describe('multiple blocks', () => {
     it('should handle multiple code blocks', () => {
-      const doc = '```javascript\nconst x = 1;\n```\n\n```python\nprint("hi")\n```';
+      const doc =
+        '```javascript\nconst x = 1;\n```\n\n```python\nprint("hi")\n```';
       view = createEditor(doc, 0);
 
-      // 应该至少有一个 widget（Lezer 解析可能有差异）
+      // Should have at least one widget (Lezer parsing may vary)
       const widgets = view.dom.querySelectorAll('.cm-codeblock-widget');
       expect(widgets.length).toBeGreaterThanOrEqual(1);
 
@@ -226,14 +227,15 @@ describe('codeBlockField', () => {
 
   describe('integration', () => {
     it('should not conflict with regular content', () => {
-      const doc = '# Title\n\nSome text\n\n```javascript\ncode\n```\n\nMore text';
+      const doc =
+        '# Title\n\nSome text\n\n```javascript\ncode\n```\n\nMore text';
       view = createEditor(doc, 0);
 
-      // 代码块应该正常渲染
+      // Code block should render normally
       const widget = view.dom.querySelector('.cm-codeblock-widget');
       expect(widget).not.toBeNull();
 
-      // 其他内容应该正常显示
+      // Other content should display normally
       expect(view.state.doc.toString()).toContain('# Title');
 
       cleanup(view);

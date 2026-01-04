@@ -1,9 +1,14 @@
 /**
- * 链接 Widget 测试
+ * Link Widget Tests
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { LinkWidget, createLinkWidget, LinkData, LinkOptions } from '../linkWidget';
+import {
+  LinkWidget,
+  createLinkWidget,
+  LinkData,
+  LinkOptions,
+} from '../linkWidget';
 
 describe('LinkWidget', () => {
   const defaultData: LinkData = {
@@ -108,7 +113,7 @@ describe('LinkWidget', () => {
       const widget = new LinkWidget(wikiData, options);
       const dom = widget.toDOM();
 
-      // 模拟点击
+      // Simulate click
       dom.click();
 
       expect(handler).toHaveBeenCalledWith('Wiki Page');
@@ -123,8 +128,8 @@ describe('LinkWidget', () => {
       const widget = new LinkWidget(wikiData, options);
       const dom = widget.toDOM() as HTMLAnchorElement;
 
-      // Wiki 链接应该有 href="#" 或空，并通过 click handler 处理
-      // 检查 getAttribute 而不是 href 属性（href 属性会被浏览器解析）
+      // Wiki links should have href="#" or empty, handled via click handler
+      // Check getAttribute instead of href property (href property gets parsed by browser)
       expect(dom.getAttribute('href')).toBe('');
     });
   });
@@ -135,10 +140,10 @@ describe('LinkWidget', () => {
       const widget = new LinkWidget(defaultData, options);
       const dom = widget.toDOM();
 
-      // 模拟 mouseenter
+      // Simulate mouseenter
       dom.dispatchEvent(new MouseEvent('mouseenter'));
 
-      // 等待 DOM 更新
+      // Wait for DOM update
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       const preview = dom.querySelector('.cm-link-preview');
@@ -151,11 +156,11 @@ describe('LinkWidget', () => {
       const widget = new LinkWidget(defaultData, options);
       const dom = widget.toDOM();
 
-      // 模拟 mouseenter
+      // Simulate mouseenter
       dom.dispatchEvent(new MouseEvent('mouseenter'));
       await new Promise((resolve) => setTimeout(resolve, 10));
 
-      // 模拟 mouseleave
+      // Simulate mouseleave
       dom.dispatchEvent(new MouseEvent('mouseleave'));
       await new Promise((resolve) => setTimeout(resolve, 10));
 
@@ -217,7 +222,7 @@ describe('LinkWidget', () => {
     it('should allow click to enter edit mode', () => {
       const widget = new LinkWidget(defaultData, defaultOptions);
 
-      // ignoreEvent 返回 false 表示允许事件传播
+      // ignoreEvent returns false to allow event propagation
       expect(widget.ignoreEvent()).toBe(false);
     });
   });
@@ -241,7 +246,7 @@ describe('LinkWidget', () => {
       const widget = new LinkWidget(data, defaultOptions);
       const dom = widget.toDOM() as HTMLAnchorElement;
 
-      // 应该被清理或阻止
+      // Should be sanitized or blocked
       expect(dom.href).not.toContain('javascript:');
     });
 

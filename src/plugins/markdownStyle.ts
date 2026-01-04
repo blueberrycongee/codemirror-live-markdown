@@ -9,12 +9,12 @@ import {
 } from '@codemirror/view';
 
 /**
- * 需要跳过的父节点类型
+ * Parent node types to skip
  */
 const SKIP_PARENT_TYPES = new Set(['FencedCode', 'CodeBlock']);
 
 /**
- * 检查节点是否在需要跳过的父节点内
+ * Check if node is inside a skipped parent
  */
 function isInsideSkippedParent(node: {
   node: { parent: { name: string; parent: unknown } | null };
@@ -30,11 +30,11 @@ function isInsideSkippedParent(node: {
 }
 
 /**
- * Markdown 样式插件
+ * Markdown Style Plugin
  *
- * 负责给 Markdown 元素应用样式（标题大小、粗体、斜体等）
+ * Applies styles to Markdown elements (heading sizes, bold, italic, etc.)
  *
- * 注意：这个插件只负责样式应用，不处理标记的显示/隐藏
+ * Note: This plugin only handles style application, not mark show/hide
  */
 export const markdownStylePlugin = ViewPlugin.fromClass(
   class {
@@ -53,7 +53,7 @@ export const markdownStylePlugin = ViewPlugin.fromClass(
     build(view: EditorView) {
       const decorations: Range<Decoration>[] = [];
 
-      // 样式映射表
+      // Style mapping table
       const styleMap: Record<string, string> = {
         ATXHeading1: 'cm-header-1',
         ATXHeading2: 'cm-header-2',
@@ -73,7 +73,7 @@ export const markdownStylePlugin = ViewPlugin.fromClass(
           const cls = styleMap[node.name];
           if (!cls) return;
 
-          // 跳过代码块内的节点
+          // Skip nodes inside code blocks
           if (isInsideSkippedParent(node)) {
             return;
           }
@@ -82,7 +82,7 @@ export const markdownStylePlugin = ViewPlugin.fromClass(
             Decoration.mark({ class: cls }).range(node.from, node.to)
           );
 
-          // 标题还需要行级装饰
+          // Headings also need line-level decoration
           if (node.name.startsWith('ATXHeading')) {
             decorations.push(
               Decoration.line({ class: 'cm-heading-line' }).range(node.from)

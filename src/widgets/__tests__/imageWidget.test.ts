@@ -1,9 +1,14 @@
 /**
- * 图片 Widget 测试
+ * Image Widget Tests
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { ImageWidget, createImageWidget, ImageData, ImageOptions } from '../imageWidget';
+import {
+  ImageWidget,
+  createImageWidget,
+  ImageData,
+  ImageOptions,
+} from '../imageWidget';
 
 // Mock loadImage
 vi.mock('../../utils/imageLoader', () => ({
@@ -54,7 +59,7 @@ describe('ImageWidget', () => {
       const widget = new ImageWidget(defaultData, defaultOptions);
       const dom = widget.toDOM();
 
-      // 等待图片加载
+      // Wait for image load
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       const img = dom.querySelector('img');
@@ -182,12 +187,12 @@ describe('ImageWidget', () => {
       const widget = new ImageWidget(defaultData, defaultOptions);
       const dom = widget.toDOM();
 
-      // 初始状态应该是 loading
+      // Initial state should be loading
       expect(dom.querySelector('.cm-image-loading')).not.toBeNull();
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      // 加载后应该显示图片
+      // After load should show image
       expect(dom.querySelector('.cm-image-loading')).toBeNull();
       expect(dom.querySelector('img')).not.toBeNull();
     });
@@ -250,7 +255,7 @@ describe('ImageWidget', () => {
     it('should allow click to enter edit mode', () => {
       const widget = new ImageWidget(defaultData, defaultOptions);
 
-      // ignoreEvent 返回 false 表示允许事件传播
+      // ignoreEvent returns false to allow event propagation
       expect(widget.ignoreEvent()).toBe(false);
     });
 

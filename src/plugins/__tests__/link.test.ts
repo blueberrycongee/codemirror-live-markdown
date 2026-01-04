@@ -1,5 +1,5 @@
 /**
- * 链接插件测试
+ * Link Plugin Tests
  */
 
 import { describe, it, expect, vi } from 'vitest';
@@ -24,12 +24,17 @@ vi.mock('../../widgets/linkWidget', () => ({
 }));
 
 /**
- * 创建测试用 EditorState
+ * Create test EditorState
  */
-function createState(doc: string, selection?: { anchor: number; head?: number }) {
+function createState(
+  doc: string,
+  selection?: { anchor: number; head?: number }
+) {
   return EditorState.create({
     doc,
-    selection: selection ? { anchor: selection.anchor, head: selection.head } : undefined,
+    selection: selection
+      ? { anchor: selection.anchor, head: selection.head }
+      : undefined,
     extensions: [markdown(), linkPlugin()],
   });
 }
@@ -128,7 +133,7 @@ describe('linkPlugin', () => {
       const doc = '# Title\n\n[link](https://example.com)\n\nText';
       const state = createState(doc, { anchor: 0 });
 
-      // 插件应该正常初始化
+      // Plugin should initialize normally
       expect(state).toBeDefined();
     });
 

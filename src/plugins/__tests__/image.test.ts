@@ -1,5 +1,5 @@
 /**
- * 图片插件测试
+ * Image Plugin Tests
  */
 
 import { describe, it, expect, vi } from 'vitest';
@@ -19,12 +19,17 @@ vi.mock('../../widgets/imageWidget', () => ({
 }));
 
 /**
- * 创建测试用 EditorState
+ * Create test EditorState
  */
-function createState(doc: string, selection?: { anchor: number; head?: number }) {
+function createState(
+  doc: string,
+  selection?: { anchor: number; head?: number }
+) {
   return EditorState.create({
     doc,
-    selection: selection ? { anchor: selection.anchor, head: selection.head } : undefined,
+    selection: selection
+      ? { anchor: selection.anchor, head: selection.head }
+      : undefined,
     extensions: [markdown(), imageField()],
   });
 }
@@ -54,7 +59,9 @@ describe('imageField', () => {
 
   describe('parseImageSyntax', () => {
     it('should detect image syntax', () => {
-      const result = parseImageSyntax('![alt text](https://example.com/image.png)');
+      const result = parseImageSyntax(
+        '![alt text](https://example.com/image.png)'
+      );
 
       expect(result).not.toBeNull();
       expect(result?.src).toBe('https://example.com/image.png');
@@ -109,12 +116,12 @@ describe('imageField', () => {
   describe('rendering mode', () => {
     it('should show widget when cursor outside', () => {
       const doc = '# Title\n\n![alt](image.png)\n\nText';
-      const state = createState(doc, { anchor: 0 }); // 光标在标题
+      const state = createState(doc, { anchor: 0 }); // Cursor at title
 
       const field = state.field(imageField());
       const decorations = field.iter();
 
-      // 应该有装饰
+      // Should have decorations
       let hasDecoration = false;
       while (decorations.value) {
         hasDecoration = true;
@@ -125,16 +132,16 @@ describe('imageField', () => {
     });
 
     it('should show source when cursor inside', () => {
-      // 在单元测试环境中，语法树可能不完整
-      // 这个行为在集成测试中更容易验证
-      // 这里只验证 parseImageSyntax 的正确性
+      // In unit test environment, syntax tree may be incomplete
+      // This behavior is easier to verify in integration tests
+      // Here we just verify parseImageSyntax correctness
       const result = parseImageSyntax('![alt](image.png)');
       expect(result).not.toBeNull();
       expect(result?.src).toBe('image.png');
     });
 
     it('should show source during drag selection', () => {
-      // 这个测试需要模拟拖拽状态，在集成测试中更容易验证
+      // This test needs to simulate drag state, easier to verify in integration tests
       expect(true).toBe(true);
     });
   });
@@ -174,7 +181,7 @@ describe('imageField', () => {
         iter.next();
       }
 
-      // 应该有多个装饰
+      // Should have multiple decorations
       expect(count).toBeGreaterThan(0);
     });
 
@@ -198,7 +205,7 @@ describe('imageField', () => {
       const doc = '![broken\n![]()\n![]()';
       const state = createState(doc, { anchor: 0 });
 
-      // 不应该抛出错误
+      // Should not throw error
       expect(() => state.field(imageField())).not.toThrow();
     });
 
@@ -213,7 +220,9 @@ describe('imageField', () => {
     });
 
     it('should handle image with parentheses in URL', () => {
-      const result = parseImageSyntax('![alt](https://example.com/image_(1).png)');
+      const result = parseImageSyntax(
+        '![alt](https://example.com/image_(1).png)'
+      );
 
       expect(result?.src).toBe('https://example.com/image_(1).png');
     });

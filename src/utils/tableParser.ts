@@ -1,11 +1,11 @@
 /**
- * 表格解析工具
+ * Table Parser Utility
  *
- * 将 Markdown 表格源码解析为结构化数据
+ * Parses Markdown table source into structured data
  */
 
 /**
- * 表格数据结构
+ * Table data structure
  */
 export interface TableData {
   headers: string[];
@@ -14,26 +14,28 @@ export interface TableData {
 }
 
 /**
- * 解析表格行，处理转义管道符
+ * Parse table row, handling escaped pipes
  */
 function parseRow(line: string): string[] {
-  // 先替换转义管道符为占位符
+  // Replace escaped pipes with placeholder first
   const placeholder = '\x00PIPE\x00';
   const escaped = line.replace(/\\\|/g, placeholder);
 
-  // 按管道符分割
+  // Split by pipe
   const cells = escaped.split('|');
 
-  // 去掉首尾空单元格（由于 |col1|col2| 格式）
+  // Remove empty cells at start/end (due to |col1|col2| format)
   if (cells.length > 0 && cells[0].trim() === '') cells.shift();
   if (cells.length > 0 && cells[cells.length - 1].trim() === '') cells.pop();
 
-  // 还原占位符并清理
-  return cells.map((cell) => cell.replace(new RegExp(placeholder, 'g'), '|').trim());
+  // Restore placeholder and clean up
+  return cells.map((cell) =>
+    cell.replace(new RegExp(placeholder, 'g'), '|').trim()
+  );
 }
 
 /**
- * 解析对齐方式
+ * Parse alignment
  */
 function parseAlignment(cell: string): 'left' | 'center' | 'right' | null {
   const trimmed = cell.trim();
@@ -47,7 +49,7 @@ function parseAlignment(cell: string): 'left' | 'center' | 'right' | null {
 }
 
 /**
- * 检查是否为分隔行
+ * Check if row is a separator row
  */
 function isSeparatorRow(cells: string[]): boolean {
   if (cells.length === 0) return false;
@@ -55,35 +57,35 @@ function isSeparatorRow(cells: string[]): boolean {
 }
 
 /**
- * 解析 Markdown 表格
+ * Parse Markdown table
  *
- * @param source - 表格源码
- * @returns 解析后的表格数据，无效表格返回 null
+ * @param source - Table source
+ * @returns Parsed table data, null for invalid table
  */
 export function parseMarkdownTable(source: string): TableData | null {
   const lines = source.split('\n').filter((line) => line.trim() !== '');
 
   if (lines.length < 2) return null;
 
-  // 解析表头
+  // Parse header
   const headerCells = parseRow(lines[0]);
   if (headerCells.length === 0) return null;
 
-  // 解析分隔行
+  // Parse separator row
   const separatorCells = parseRow(lines[1]);
   if (!isSeparatorRow(separatorCells)) return null;
 
-  // 列数必须匹配
+  // Column count must match
   if (headerCells.length !== separatorCells.length) return null;
 
-  // 解析对齐方式
+  // Parse alignments
   const alignments = separatorCells.map(parseAlignment);
 
-  // 解析数据行
+  // Parse data rows
   const rows: string[][] = [];
   for (let i = 2; i < lines.length; i++) {
     const rowCells = parseRow(lines[i]);
-    // 补齐或截断到表头列数
+    // Pad or truncate to header column count
     const normalizedRow = headerCells.map((_, idx) => rowCells[idx] ?? '');
     rows.push(normalizedRow);
   }

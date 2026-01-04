@@ -1,21 +1,21 @@
 /**
- * 数学公式 Widget
- * 
- * 使用 KaTeX 渲染数学公式，支持行内和块级两种模式
+ * Math Formula Widget
+ *
+ * Uses KaTeX to render math formulas, supports inline and block modes
  */
 
 import { WidgetType } from '@codemirror/view';
 import { renderMath } from '../utils/mathCache';
 
 /**
- * 数学公式 Widget 类
- * 
- * 负责将数学公式渲染为 DOM 元素
+ * Math Formula Widget class
+ *
+ * Responsible for rendering math formulas to DOM elements
  */
 export class MathWidget extends WidgetType {
   /**
-   * @param source - 公式源码（不包含 $ 符号）
-   * @param isBlock - 是否为块级公式
+   * @param source - Formula source (without $ symbols)
+   * @param isBlock - Whether it's a block formula
    */
   constructor(
     readonly source: string,
@@ -25,16 +25,16 @@ export class MathWidget extends WidgetType {
   }
 
   /**
-   * 判断两个 Widget 是否相等
-   * 
-   * 用于优化：如果相等则不重新渲染
+   * Check if two widgets are equal
+   *
+   * Used for optimization: skip re-render if equal
    */
   eq(other: MathWidget): boolean {
     return other.source === this.source && other.isBlock === this.isBlock;
   }
 
   /**
-   * 渲染为 DOM 元素
+   * Render to DOM element
    */
   toDOM(): HTMLElement {
     const container = document.createElement(this.isBlock ? 'div' : 'span');
@@ -53,9 +53,9 @@ export class MathWidget extends WidgetType {
   }
 
   /**
-   * 是否忽略事件
-   * 
-   * 返回 false 允许点击公式进入编辑模式
+   * Whether to ignore events
+   *
+   * Return false to allow click to enter edit mode
    */
   ignoreEvent(): boolean {
     return false;
@@ -63,11 +63,11 @@ export class MathWidget extends WidgetType {
 }
 
 /**
- * 创建数学公式 Widget
- * 
- * @param source - 公式源码（不包含 $ 符号）
- * @param isBlock - 是否为块级公式
- * @returns MathWidget 实例
+ * Create math formula widget
+ *
+ * @param source - Formula source (without $ symbols)
+ * @param isBlock - Whether it's a block formula
+ * @returns MathWidget instance
  */
 export function createMathWidget(source: string, isBlock: boolean): MathWidget {
   return new MathWidget(source, isBlock);
