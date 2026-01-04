@@ -19,7 +19,8 @@ export const editorTheme = EditorView.theme({
   },
 
   '.cm-content': {
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    // 使用等宽字体，确保点击位置计算准确
+    fontFamily: "'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace",
     padding: '16px 0',
     caretColor: 'hsl(var(--primary, 220 90% 56%))',
   },
@@ -374,7 +375,7 @@ export const editorTheme = EditorView.theme({
   },
   '.cm-codeblock-source': {
     backgroundColor: 'rgba(139, 92, 246, 0.1)',
-    fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+    // 字体继承自 .cm-content，确保一致性
   },
   '.cm-codeblock-line-numbers': {
     counterReset: 'line',

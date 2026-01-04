@@ -113,19 +113,13 @@ export class CodeBlockWidget extends WidgetType {
           } else if (lineIndex >= 0 && lineIndex < widgetData.lineStarts.length) {
             targetPos = widgetData.lineStarts[lineIndex];
 
-            // 计算列位置
-            const pre = container.querySelector('pre');
-            if (pre) {
-              const rect = lineEl.getBoundingClientRect();
-              const clickX = event.clientX - rect.left;
-              const style = window.getComputedStyle(pre);
-              const fontSize = parseFloat(style.fontSize) || 16;
-              const charWidth = fontSize * 0.6;
-              const charOffset = Math.floor(clickX / charWidth);
-              const lineText = lineEl.textContent || '';
-              const maxOffset = lineText.length;
-              targetPos += Math.min(charOffset, maxOffset);
-            }
+            // 计算列位置 - 使用精确测量
+            const charOffset = this.measureClickOffset(
+              lineEl as HTMLElement,
+              event.clientX,
+              widgetData.code.split('\n')[lineIndex] || ''
+            );
+            targetPos += charOffset;
           }
         }
 
@@ -241,6 +235,89 @@ export class CodeBlockWidget extends WidgetType {
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
+  }
+
+  /**
+   * 精确测量点击位置对应的字符偏移
+   * 
+   * 使用 Canvas 测量文本宽度，找到点击位置对应的字符
+   * 
+   * @param lineEl - 行元素
+   * @param clientX - 点击的 X 坐标
+   * @param sourceText - 源码中的行文本（用于限制最大偏移）
+   * @returns 字符偏移量
+   */
+  private measureClickOffset(
+    lineEl: HTMLElement,
+    clientX: number,
+    sourceText: string
+  ): number {
+    const rect = lineEl.getBoundingClientRect();
+    const clickX = clientX - rect.left;
+    
+    // 获取行的 padding
+    const style = window.getComputedStyle(lineEl);
+    const paddingLeft = parseFloat(style.paddingLeft) || 0;
+    
+    // 调整点击位置，减去 padding
+    const textClickX = clickX - paddingLeft;
+    
+    if (textClickX <= 0) {
+      return 0;
+    }
+    
+    // 使用 Canvas 测量文本宽度
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) {
+      // 降级：使用简单估算
+      const fontSize = parseFloat(style.fontSize) || 16;
+      const charWidth = fontSize * 0.6;
+      const charOffset = Math.floor(textClickX / charWidth);
+      return Math.min(charOffset, sourceText.length);
+    }
+    
+    // 设置与行元素相同的字体
+    ctx.font = `${style.fontSize} ${style.fontFamily}`;
+    
+    // 二分查找点击位置对应的字符
+    // 使用源码文本进行测量，确保与源码位置一致
+    const text = sourceText;
+    let left = 0;
+    let right = text.length;
+    
+    while (left < right) {
+      const mid = Math.floor((left + right + 1) / 2);
+      const width = ctx.measureText(text.substring(0, mid)).width;
+      
+      if (width <= textClickX) {
+        left = mid;
+      } else {
+        right = mid - 1;
+      }
+    }
+    
+    // 检查是否更接近下一个字符
+    if (left < text.length) {
+      const currentWidth = ctx.measureText(text.substring(0, left)).width;
+      const nextWidth = ctx.measureText(text.substring(0, left + 1)).width;
+      const midPoint = (currentWidth + nextWidth) / 2;
+      
+      if (textClickX > midPoint) {
+        left++;
+      }
+    }
+    
+    console.log('[CodeBlock Widget] measureClickOffset', {
+      clickX,
+      paddingLeft,
+      textClickX,
+      sourceText: sourceText.substring(0, 30) + '...',
+      charOffset: left,
+    });
+    
+    return Math.min(left, sourceText.length);
   }
 
   /**
