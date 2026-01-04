@@ -90,6 +90,15 @@ const defaultOptions: Required<LinkOptions> = {
 };
 
 /**
+ * 需要跳过的父节点类型（这些区域由其他插件处理）
+ */
+const SKIP_PARENT_TYPES = new Set([
+  'FencedCode',
+  'CodeBlock',
+  'InlineCode',
+]);
+
+/**
  * 构建链接装饰
  */
 function buildLinkDecorations(
@@ -100,10 +109,29 @@ function buildLinkDecorations(
   const state = view.state;
   const isDrag = state.field(mouseSelectingField, false);
 
+  // 收集需要跳过的区域（代码块、行内代码等）
+  const skipRanges: Array<{ from: number; to: number }> = [];
+  syntaxTree(state).iterate({
+    enter: (node) => {
+      if (SKIP_PARENT_TYPES.has(node.name)) {
+        skipRanges.push({ from: node.from, to: node.to });
+      }
+    },
+  });
+
+  // 检查位置是否在跳过区域内
+  const isInSkipRange = (from: number, to: number) => {
+    return skipRanges.some((r) => from >= r.from && to <= r.to);
+  };
+
   // 处理标准链接
   syntaxTree(state).iterate({
     enter: (node) => {
       if (node.name === 'Link') {
+        // 跳过代码块内的链接
+        if (isInSkipRange(node.from, node.to)) {
+          return;
+        }
         const from = node.from;
         const to = node.to;
 
@@ -145,6 +173,11 @@ function buildLinkDecorations(
   while ((match = WIKI_LINK_REGEX.exec(docText)) !== null) {
     const from = match.index;
     const to = from + match[0].length;
+
+    // 跳过代码块内的 Wiki 链接
+    if (isInSkipRange(from, to)) {
+      continue;
+    }
 
     const wikiData = parseWikiLink(match[0]);
     if (!wikiData) {

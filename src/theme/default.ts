@@ -216,7 +216,6 @@ export const editorTheme = EditorView.theme({
   // ========== Image Styles ==========
   '.cm-image-widget': {
     display: 'block',
-    margin: '12px 0',
     cursor: 'pointer',
   },
   '.cm-image-widget img': {
