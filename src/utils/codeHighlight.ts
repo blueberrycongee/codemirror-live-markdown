@@ -60,16 +60,71 @@ function hastToHtml(node: any): string {
   return '';
 }
 
+// 缓存的 lowlight 模块
+let lowlightModule: { createLowlight: any; common: any } | null = null;
+
+// 尝试加载 lowlight 模块
+async function loadLowlightModule(): Promise<boolean> {
+  if (lowlightModule !== null) {
+    return true;
+  }
+  try {
+    // 动态导入 ESM 模块
+    const mod = await import('lowlight');
+    lowlightModule = mod;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // 同步初始化（用于测试和首次调用）
 function initLowlightSync(): boolean {
   if (lowlightAvailable !== null) {
     return lowlightAvailable;
   }
 
+  // 如果模块已经加载，使用它
+  if (lowlightModule) {
+    try {
+      lowlightInstance = lowlightModule.createLowlight(lowlightModule.common);
+      lowlightAvailable = true;
+      return true;
+    } catch {
+      lowlightAvailable = false;
+      return false;
+    }
+  }
+
+  // 尝试同步 require（可能在某些环境下工作）
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { createLowlight, common } = require('lowlight');
     lowlightInstance = createLowlight(common);
+    lowlightAvailable = true;
+    return true;
+  } catch {
+    // 如果同步加载失败，标记为不可用
+    // 异步加载会在后台尝试
+    lowlightAvailable = false;
+    return false;
+  }
+}
+
+// 异步初始化（推荐使用）
+async function initLowlightAsync(): Promise<boolean> {
+  if (lowlightAvailable === true && lowlightInstance) {
+    return true;
+  }
+
+  const loaded = await loadLowlightModule();
+  if (!loaded || !lowlightModule) {
+    lowlightAvailable = false;
+    return false;
+  }
+
+  try {
+    lowlightInstance = lowlightModule.createLowlight(lowlightModule.common);
     lowlightAvailable = true;
     return true;
   } catch {
@@ -84,7 +139,22 @@ function initLowlightSync(): boolean {
 export function resetHighlighter(): void {
   lowlightInstance = null;
   lowlightAvailable = null;
-  initLowlightSync();
+  // 不自动初始化，让测试控制初始化时机
+}
+
+/**
+ * 异步初始化高亮器
+ * 推荐在应用启动时调用
+ */
+export async function initHighlighter(): Promise<boolean> {
+  return initLowlightAsync();
+}
+
+/**
+ * 检查高亮器是否可用
+ */
+export function isHighlighterAvailable(): boolean {
+  return lowlightAvailable === true && lowlightInstance !== null;
 }
 
 /**

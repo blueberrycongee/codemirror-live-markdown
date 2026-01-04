@@ -30,7 +30,7 @@ export { editorTheme } from './theme/default';
 
 // Utils
 export { renderMath, clearMathCache } from './utils/mathCache';
-export { highlightCode, registerLanguage, isLanguageRegistered } from './utils/codeHighlight';
+export { highlightCode, registerLanguage, isLanguageRegistered, initHighlighter, isHighlighterAvailable } from './utils/codeHighlight';
 export type { HighlightResult } from './utils/codeHighlight';
 export { loadImage, preloadImages, clearImageCache, resolveImagePath } from './utils/imageLoader';
 export type { LoadedImage, LoadImageOptions } from './utils/imageLoader';
