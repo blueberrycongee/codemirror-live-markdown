@@ -237,7 +237,6 @@ export const editorTheme = EditorView.theme({
   '.cm-codeblock-widget': {
     display: 'block',
     position: 'relative',
-    margin: '8px 0',
     borderRadius: '6px',
     overflow: 'hidden',
     backgroundColor: 'hsl(var(--muted, 220 14% 96%))',
