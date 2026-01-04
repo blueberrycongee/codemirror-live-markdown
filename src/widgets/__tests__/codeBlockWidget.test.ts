@@ -15,6 +15,25 @@ Object.defineProperty(navigator, 'clipboard', {
   writable: true,
 });
 
+/**
+ * 创建测试用的 CodeBlockData
+ */
+function createTestData(
+  overrides: Partial<CodeBlockData> = {}
+): CodeBlockData {
+  return {
+    code: 'const x = 1;',
+    language: 'javascript',
+    showLineNumbers: false,
+    showCopyButton: false,
+    from: 0,
+    to: 50,
+    codeFrom: 14,
+    lineStarts: [14],
+    ...overrides,
+  };
+}
+
 describe('CodeBlockWidget', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -22,12 +41,7 @@ describe('CodeBlockWidget', () => {
 
   describe('rendering', () => {
     it('should render pre > code structure', () => {
-      const widget = createCodeBlockWidget({
-        code: 'const x = 1;',
-        language: 'javascript',
-        showLineNumbers: false,
-        showCopyButton: false,
-      });
+      const widget = createCodeBlockWidget(createTestData());
 
       const dom = widget.toDOM();
       expect(dom.tagName).toBe('DIV');
@@ -41,12 +55,7 @@ describe('CodeBlockWidget', () => {
     });
 
     it('should apply syntax highlighting classes', () => {
-      const widget = createCodeBlockWidget({
-        code: 'const x = 1;',
-        language: 'javascript',
-        showLineNumbers: false,
-        showCopyButton: false,
-      });
+      const widget = createCodeBlockWidget(createTestData());
 
       const dom = widget.toDOM();
       const code = dom.querySelector('code');
@@ -55,12 +64,12 @@ describe('CodeBlockWidget', () => {
     });
 
     it('should display language label', () => {
-      const widget = createCodeBlockWidget({
-        code: 'print("hello")',
-        language: 'python',
-        showLineNumbers: false,
-        showCopyButton: false,
-      });
+      const widget = createCodeBlockWidget(
+        createTestData({
+          code: 'print("hello")',
+          language: 'python',
+        })
+      );
 
       const dom = widget.toDOM();
       const langLabel = dom.querySelector('.cm-codeblock-lang');
@@ -69,12 +78,9 @@ describe('CodeBlockWidget', () => {
     });
 
     it('should render copy button when enabled', () => {
-      const widget = createCodeBlockWidget({
-        code: 'const x = 1;',
-        language: 'javascript',
-        showLineNumbers: false,
-        showCopyButton: true,
-      });
+      const widget = createCodeBlockWidget(
+        createTestData({ showCopyButton: true })
+      );
 
       const dom = widget.toDOM();
       const copyBtn = dom.querySelector('.cm-codeblock-copy');
@@ -82,12 +88,9 @@ describe('CodeBlockWidget', () => {
     });
 
     it('should not render copy button when disabled', () => {
-      const widget = createCodeBlockWidget({
-        code: 'const x = 1;',
-        language: 'javascript',
-        showLineNumbers: false,
-        showCopyButton: false,
-      });
+      const widget = createCodeBlockWidget(
+        createTestData({ showCopyButton: false })
+      );
 
       const dom = widget.toDOM();
       const copyBtn = dom.querySelector('.cm-codeblock-copy');
@@ -95,26 +98,27 @@ describe('CodeBlockWidget', () => {
     });
 
     it('should render line numbers when enabled', () => {
-      const widget = createCodeBlockWidget({
-        code: 'line1\nline2\nline3',
-        language: 'text',
-        showLineNumbers: true,
-        showCopyButton: false,
-      });
+      const widget = createCodeBlockWidget(
+        createTestData({
+          code: 'line1\nline2\nline3',
+          showLineNumbers: true,
+          lineStarts: [14, 20, 26],
+        })
+      );
 
       const dom = widget.toDOM();
       expect(dom.className).toContain('cm-codeblock-line-numbers');
-      const lines = dom.querySelectorAll('.line');
+      const lines = dom.querySelectorAll('.cm-codeblock-line');
       expect(lines.length).toBe(3);
     });
 
     it('should not render line numbers when disabled', () => {
-      const widget = createCodeBlockWidget({
-        code: 'line1\nline2',
-        language: 'text',
-        showLineNumbers: false,
-        showCopyButton: false,
-      });
+      const widget = createCodeBlockWidget(
+        createTestData({
+          code: 'line1\nline2',
+          showLineNumbers: false,
+        })
+      );
 
       const dom = widget.toDOM();
       expect(dom.className).not.toContain('cm-codeblock-line-numbers');
@@ -123,31 +127,33 @@ describe('CodeBlockWidget', () => {
 
   describe('copy functionality', () => {
     it('should copy code to clipboard on button click', async () => {
-      const widget = createCodeBlockWidget({
-        code: 'const x = 1;',
-        language: 'javascript',
-        showLineNumbers: false,
-        showCopyButton: true,
-      });
+      const widget = createCodeBlockWidget(
+        createTestData({ showCopyButton: true })
+      );
 
       const dom = widget.toDOM();
-      const copyBtn = dom.querySelector('.cm-codeblock-copy') as HTMLButtonElement;
+      const copyBtn = dom.querySelector(
+        '.cm-codeblock-copy'
+      ) as HTMLButtonElement;
 
-      await copyBtn.click();
+      copyBtn.click();
 
       expect(mockClipboard.writeText).toHaveBeenCalledWith('const x = 1;');
     });
 
     it('should show success feedback', async () => {
-      const widget = createCodeBlockWidget({
-        code: 'test',
-        language: 'text',
-        showLineNumbers: false,
-        showCopyButton: true,
-      });
+      const widget = createCodeBlockWidget(
+        createTestData({
+          code: 'test',
+          language: 'text',
+          showCopyButton: true,
+        })
+      );
 
       const dom = widget.toDOM();
-      const copyBtn = dom.querySelector('.cm-codeblock-copy') as HTMLButtonElement;
+      const copyBtn = dom.querySelector(
+        '.cm-codeblock-copy'
+      ) as HTMLButtonElement;
 
       copyBtn.click();
 
@@ -160,15 +166,18 @@ describe('CodeBlockWidget', () => {
     it('should handle copy failure gracefully', async () => {
       mockClipboard.writeText.mockRejectedValueOnce(new Error('Copy failed'));
 
-      const widget = createCodeBlockWidget({
-        code: 'test',
-        language: 'text',
-        showLineNumbers: false,
-        showCopyButton: true,
-      });
+      const widget = createCodeBlockWidget(
+        createTestData({
+          code: 'test',
+          language: 'text',
+          showCopyButton: true,
+        })
+      );
 
       const dom = widget.toDOM();
-      const copyBtn = dom.querySelector('.cm-codeblock-copy') as HTMLButtonElement;
+      const copyBtn = dom.querySelector(
+        '.cm-codeblock-copy'
+      ) as HTMLButtonElement;
 
       // 点击不应该抛出错误
       copyBtn.click();
@@ -182,12 +191,7 @@ describe('CodeBlockWidget', () => {
 
   describe('equality', () => {
     it('should return true for identical data', () => {
-      const data: CodeBlockData = {
-        code: 'const x = 1;',
-        language: 'javascript',
-        showLineNumbers: false,
-        showCopyButton: true,
-      };
+      const data = createTestData();
 
       const widget1 = createCodeBlockWidget(data);
       const widget2 = createCodeBlockWidget(data);
@@ -196,55 +200,30 @@ describe('CodeBlockWidget', () => {
     });
 
     it('should return false for different code', () => {
-      const widget1 = createCodeBlockWidget({
-        code: 'const x = 1;',
-        language: 'javascript',
-        showLineNumbers: false,
-        showCopyButton: true,
-      });
-
-      const widget2 = createCodeBlockWidget({
-        code: 'const y = 2;',
-        language: 'javascript',
-        showLineNumbers: false,
-        showCopyButton: true,
-      });
+      const widget1 = createCodeBlockWidget(createTestData({ code: 'const x = 1;' }));
+      const widget2 = createCodeBlockWidget(createTestData({ code: 'const y = 2;' }));
 
       expect(widget1.eq(widget2)).toBe(false);
     });
 
     it('should return false for different language', () => {
-      const widget1 = createCodeBlockWidget({
-        code: 'x = 1',
-        language: 'javascript',
-        showLineNumbers: false,
-        showCopyButton: true,
-      });
-
-      const widget2 = createCodeBlockWidget({
-        code: 'x = 1',
-        language: 'python',
-        showLineNumbers: false,
-        showCopyButton: true,
-      });
+      const widget1 = createCodeBlockWidget(
+        createTestData({ code: 'x = 1', language: 'javascript' })
+      );
+      const widget2 = createCodeBlockWidget(
+        createTestData({ code: 'x = 1', language: 'python' })
+      );
 
       expect(widget1.eq(widget2)).toBe(false);
     });
 
     it('should return false for different options', () => {
-      const widget1 = createCodeBlockWidget({
-        code: 'x = 1',
-        language: 'javascript',
-        showLineNumbers: true,
-        showCopyButton: true,
-      });
-
-      const widget2 = createCodeBlockWidget({
-        code: 'x = 1',
-        language: 'javascript',
-        showLineNumbers: false,
-        showCopyButton: true,
-      });
+      const widget1 = createCodeBlockWidget(
+        createTestData({ showLineNumbers: true })
+      );
+      const widget2 = createCodeBlockWidget(
+        createTestData({ showLineNumbers: false })
+      );
 
       expect(widget1.eq(widget2)).toBe(false);
     });
@@ -252,12 +231,9 @@ describe('CodeBlockWidget', () => {
 
   describe('accessibility', () => {
     it('should have proper ARIA labels', () => {
-      const widget = createCodeBlockWidget({
-        code: 'const x = 1;',
-        language: 'javascript',
-        showLineNumbers: false,
-        showCopyButton: true,
-      });
+      const widget = createCodeBlockWidget(
+        createTestData({ showCopyButton: true })
+      );
 
       const dom = widget.toDOM();
       const copyBtn = dom.querySelector('.cm-codeblock-copy');
@@ -266,15 +242,14 @@ describe('CodeBlockWidget', () => {
     });
 
     it('should be keyboard accessible', () => {
-      const widget = createCodeBlockWidget({
-        code: 'const x = 1;',
-        language: 'javascript',
-        showLineNumbers: false,
-        showCopyButton: true,
-      });
+      const widget = createCodeBlockWidget(
+        createTestData({ showCopyButton: true })
+      );
 
       const dom = widget.toDOM();
-      const copyBtn = dom.querySelector('.cm-codeblock-copy') as HTMLButtonElement;
+      const copyBtn = dom.querySelector(
+        '.cm-codeblock-copy'
+      ) as HTMLButtonElement;
 
       // 按钮应该可以通过键盘访问
       expect(copyBtn.tagName).toBe('BUTTON');
@@ -284,14 +259,41 @@ describe('CodeBlockWidget', () => {
 
   describe('ignoreEvent', () => {
     it('should return false to allow click events', () => {
-      const widget = createCodeBlockWidget({
-        code: 'test',
-        language: 'text',
-        showLineNumbers: false,
-        showCopyButton: false,
-      });
+      const widget = createCodeBlockWidget(createTestData());
 
       expect(widget.ignoreEvent()).toBe(false);
+    });
+  });
+
+  describe('position data', () => {
+    it('should store position data in dataset', () => {
+      const widget = createCodeBlockWidget(
+        createTestData({
+          from: 100,
+          lineStarts: [114, 120, 126],
+        })
+      );
+
+      const dom = widget.toDOM();
+      expect(dom.dataset.from).toBe('100');
+      expect(dom.dataset.lineStarts).toBe('[114,120,126]');
+    });
+
+    it('should add line index to each line', () => {
+      const widget = createCodeBlockWidget(
+        createTestData({
+          code: 'line1\nline2\nline3',
+          lineStarts: [14, 20, 26],
+        })
+      );
+
+      const dom = widget.toDOM();
+      const lines = dom.querySelectorAll('.cm-codeblock-line');
+
+      expect(lines.length).toBe(3);
+      expect((lines[0] as HTMLElement).dataset.lineIndex).toBe('0');
+      expect((lines[1] as HTMLElement).dataset.lineIndex).toBe('1');
+      expect((lines[2] as HTMLElement).dataset.lineIndex).toBe('2');
     });
   });
 });

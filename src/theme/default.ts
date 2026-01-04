@@ -328,30 +328,30 @@ export const editorTheme = EditorView.theme({
   '.cm-codeblock-widget': {
     display: 'block',
     position: 'relative',
-    borderRadius: '6px',
     overflow: 'hidden',
     backgroundColor: 'hsl(var(--muted, 220 14% 96%))',
   },
   '.cm-codeblock-widget pre': {
     margin: '0',
-    padding: '16px',
+    padding: '0',
     overflow: 'auto',
-    fontSize: '14px',
-    lineHeight: '1.5',
     fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
   },
   '.cm-codeblock-widget code': {
     fontFamily: 'inherit',
     backgroundColor: 'transparent',
     padding: '0',
+    display: 'block',
   },
-  '.cm-codeblock-lang': {
-    position: 'absolute',
-    top: '8px',
-    right: '48px',
-    fontSize: '12px',
-    color: 'hsl(var(--muted-foreground, 220 9% 46%))',
-    textTransform: 'uppercase',
+  '.cm-codeblock-line': {
+    display: 'block',
+    padding: '0 16px',
+    fontSize: '16px',
+    lineHeight: '1.75',
+    minHeight: '28px',
+  },
+  '.cm-codeblock-fence': {
+    color: 'hsl(var(--muted-foreground, 220 9% 46%) / 0.5)',
   },
   '.cm-codeblock-copy': {
     position: 'absolute',
@@ -364,6 +364,7 @@ export const editorTheme = EditorView.theme({
     cursor: 'pointer',
     fontSize: '12px',
     transition: 'background-color 0.2s',
+    zIndex: '1',
   },
   '.cm-codeblock-copy:hover': {
     backgroundColor: 'hsl(var(--border, 220 13% 91%))',
