@@ -194,13 +194,23 @@ export const editorTheme = EditorView.theme({
     display: 'block',
     overflowX: 'auto',
     cursor: 'text',
+    margin: '8px 0',
+  },
+  '.cm-table-widget table': {
+    borderCollapse: 'collapse',
+    width: '100%',
+  },
+  '.cm-table-widget th, .cm-table-widget td': {
+    border: '1px solid hsl(var(--border, 220 13% 91%))',
+    padding: '8px 12px',
+  },
+  '.cm-table-widget th': {
+    backgroundColor: 'hsl(var(--muted, 220 14% 96%))',
+    fontWeight: '600',
   },
   '.cm-table-source': {
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
     fontFamily: "'JetBrains Mono', monospace !important",
-    whiteSpace: 'pre',
-    color: 'hsl(var(--foreground, 220 9% 9%))',
-    display: 'block',
-    overflowX: 'auto',
   },
 
   // ========== Image Styles ==========
