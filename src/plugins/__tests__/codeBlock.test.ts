@@ -78,18 +78,19 @@ describe('codeBlockField', () => {
 
   describe('detection', () => {
     it('should detect fenced code block', () => {
-      const doc = '```javascript\nconst x = 1;\n```';
+      const doc = 'Hello\n\n```javascript\nconst x = 1;\n```';
+      // 光标在 "Hello" 位置，代码块外
       view = createEditor(doc, 0);
 
-      // 光标在代码块外，应该有装饰
-      const decos = view.state.field(codeBlockField());
-      expect(decos.size).toBeGreaterThan(0);
+      // 光标在代码块外，应该显示 widget
+      const widget = view.dom.querySelector('.cm-codeblock-widget');
+      expect(widget).not.toBeNull();
 
       cleanup(view);
     });
 
     it('should extract language from code info', () => {
-      const doc = '```python\nprint("hello")\n```';
+      const doc = 'Hello\n\n```python\nprint("hello")\n```';
       view = createEditor(doc, 0);
 
       // 检查是否正确识别了语言
@@ -101,22 +102,23 @@ describe('codeBlockField', () => {
     });
 
     it('should handle code block without language', () => {
-      const doc = '```\nsome code\n```';
+      const doc = 'Hello\n\n```\nsome code\n```';
       view = createEditor(doc, 0);
 
-      const decos = view.state.field(codeBlockField());
-      expect(decos.size).toBeGreaterThan(0);
+      // 应该显示 widget
+      const widget = view.dom.querySelector('.cm-codeblock-widget');
+      expect(widget).not.toBeNull();
 
       cleanup(view);
     });
 
     it('should ignore math code blocks', () => {
-      const doc = '```math\nx^2 + y^2 = z^2\n```';
+      const doc = 'Hello\n\n```math\nx^2 + y^2 = z^2\n```';
       view = createEditor(doc, 0);
 
-      // math 代码块不应该被 codeBlockField 处理
-      const decos = view.state.field(codeBlockField());
-      expect(decos.size).toBe(0);
+      // math 代码块不应该被 codeBlockField 处理，不应该有 widget
+      const widget = view.dom.querySelector('.cm-codeblock-widget');
+      expect(widget).toBeNull();
 
       cleanup(view);
     });
@@ -162,17 +164,22 @@ describe('codeBlockField', () => {
 
   describe('updates', () => {
     it('should update on document change', () => {
-      const doc = '```javascript\nconst x = 1;\n```';
+      const doc = 'Hello\n\n```javascript\nconst x = 1;\n```';
       view = createEditor(doc, 0);
 
-      // 修改文档
+      // 初始应该有 widget
+      let widget = view.dom.querySelector('.cm-codeblock-widget');
+      expect(widget).not.toBeNull();
+
+      // 修改文档（光标移到代码块内）
       view.dispatch({
-        changes: { from: 14, to: 26, insert: 'let y = 2;' },
+        changes: { from: 21, to: 33, insert: 'let y = 2;' },
+        selection: { anchor: 21 },
       });
 
-      // 应该仍然有装饰
-      const decos = view.state.field(codeBlockField());
-      expect(decos).toBeDefined();
+      // 应该切换到源码模式
+      const sourceLine = view.dom.querySelector('.cm-codeblock-source');
+      expect(sourceLine).not.toBeNull();
 
       cleanup(view);
     });
@@ -187,7 +194,7 @@ describe('codeBlockField', () => {
 
       // 移动光标到代码块内
       view.dispatch({
-        selection: { anchor: 20 },
+        selection: { anchor: 25 },
       });
 
       // 应该切换到源码模式

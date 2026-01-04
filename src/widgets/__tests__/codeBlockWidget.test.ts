@@ -27,6 +27,8 @@ describe('CodeBlockWidget', () => {
         language: 'javascript',
         showLineNumbers: false,
         showCopyButton: false,
+        from: 0,
+        codeFrom: 14,
       });
 
       const dom = widget.toDOM();
@@ -46,6 +48,8 @@ describe('CodeBlockWidget', () => {
         language: 'javascript',
         showLineNumbers: false,
         showCopyButton: false,
+        from: 0,
+        codeFrom: 14,
       });
 
       const dom = widget.toDOM();
@@ -60,6 +64,8 @@ describe('CodeBlockWidget', () => {
         language: 'python',
         showLineNumbers: false,
         showCopyButton: false,
+        from: 0,
+        codeFrom: 10,
       });
 
       const dom = widget.toDOM();
@@ -74,6 +80,8 @@ describe('CodeBlockWidget', () => {
         language: 'javascript',
         showLineNumbers: false,
         showCopyButton: true,
+        from: 0,
+        codeFrom: 14,
       });
 
       const dom = widget.toDOM();
@@ -87,6 +95,8 @@ describe('CodeBlockWidget', () => {
         language: 'javascript',
         showLineNumbers: false,
         showCopyButton: false,
+        from: 0,
+        codeFrom: 14,
       });
 
       const dom = widget.toDOM();
@@ -100,6 +110,8 @@ describe('CodeBlockWidget', () => {
         language: 'text',
         showLineNumbers: true,
         showCopyButton: false,
+        from: 0,
+        codeFrom: 4,
       });
 
       const dom = widget.toDOM();
@@ -114,6 +126,8 @@ describe('CodeBlockWidget', () => {
         language: 'text',
         showLineNumbers: false,
         showCopyButton: false,
+        from: 0,
+        codeFrom: 4,
       });
 
       const dom = widget.toDOM();
@@ -128,6 +142,8 @@ describe('CodeBlockWidget', () => {
         language: 'javascript',
         showLineNumbers: false,
         showCopyButton: true,
+        from: 0,
+        codeFrom: 14,
       });
 
       const dom = widget.toDOM();
@@ -144,6 +160,8 @@ describe('CodeBlockWidget', () => {
         language: 'text',
         showLineNumbers: false,
         showCopyButton: true,
+        from: 0,
+        codeFrom: 4,
       });
 
       const dom = widget.toDOM();
@@ -165,6 +183,8 @@ describe('CodeBlockWidget', () => {
         language: 'text',
         showLineNumbers: false,
         showCopyButton: true,
+        from: 0,
+        codeFrom: 4,
       });
 
       const dom = widget.toDOM();
@@ -187,6 +207,8 @@ describe('CodeBlockWidget', () => {
         language: 'javascript',
         showLineNumbers: false,
         showCopyButton: true,
+        from: 0,
+        codeFrom: 14,
       };
 
       const widget1 = createCodeBlockWidget(data);
@@ -201,6 +223,8 @@ describe('CodeBlockWidget', () => {
         language: 'javascript',
         showLineNumbers: false,
         showCopyButton: true,
+        from: 0,
+        codeFrom: 14,
       });
 
       const widget2 = createCodeBlockWidget({
@@ -208,6 +232,8 @@ describe('CodeBlockWidget', () => {
         language: 'javascript',
         showLineNumbers: false,
         showCopyButton: true,
+        from: 0,
+        codeFrom: 14,
       });
 
       expect(widget1.eq(widget2)).toBe(false);
@@ -219,6 +245,8 @@ describe('CodeBlockWidget', () => {
         language: 'javascript',
         showLineNumbers: false,
         showCopyButton: true,
+        from: 0,
+        codeFrom: 14,
       });
 
       const widget2 = createCodeBlockWidget({
@@ -226,6 +254,8 @@ describe('CodeBlockWidget', () => {
         language: 'python',
         showLineNumbers: false,
         showCopyButton: true,
+        from: 0,
+        codeFrom: 10,
       });
 
       expect(widget1.eq(widget2)).toBe(false);
@@ -237,6 +267,8 @@ describe('CodeBlockWidget', () => {
         language: 'javascript',
         showLineNumbers: true,
         showCopyButton: true,
+        from: 0,
+        codeFrom: 14,
       });
 
       const widget2 = createCodeBlockWidget({
@@ -244,6 +276,8 @@ describe('CodeBlockWidget', () => {
         language: 'javascript',
         showLineNumbers: false,
         showCopyButton: true,
+        from: 0,
+        codeFrom: 14,
       });
 
       expect(widget1.eq(widget2)).toBe(false);
@@ -257,6 +291,8 @@ describe('CodeBlockWidget', () => {
         language: 'javascript',
         showLineNumbers: false,
         showCopyButton: true,
+        from: 0,
+        codeFrom: 14,
       });
 
       const dom = widget.toDOM();
@@ -271,6 +307,8 @@ describe('CodeBlockWidget', () => {
         language: 'javascript',
         showLineNumbers: false,
         showCopyButton: true,
+        from: 0,
+        codeFrom: 14,
       });
 
       const dom = widget.toDOM();
@@ -289,9 +327,45 @@ describe('CodeBlockWidget', () => {
         language: 'text',
         showLineNumbers: false,
         showCopyButton: false,
+        from: 0,
+        codeFrom: 4,
       });
 
       expect(widget.ignoreEvent()).toBe(false);
+    });
+  });
+
+  describe('position data', () => {
+    it('should store codeFrom in dataset', () => {
+      const widget = createCodeBlockWidget({
+        code: 'const x = 1;',
+        language: 'javascript',
+        showLineNumbers: false,
+        showCopyButton: false,
+        from: 0,
+        codeFrom: 14,
+      });
+
+      const dom = widget.toDOM();
+      expect(dom.dataset.codeFrom).toBe('14');
+    });
+
+    it('should store line offsets in dataset', () => {
+      const widget = createCodeBlockWidget({
+        code: 'line1\nline2\nline3',
+        language: 'text',
+        showLineNumbers: false,
+        showCopyButton: false,
+        from: 0,
+        codeFrom: 4,
+      });
+
+      const dom = widget.toDOM();
+      const lines = dom.querySelectorAll('.line');
+
+      expect(lines[0].getAttribute('data-offset')).toBe('0');
+      expect(lines[1].getAttribute('data-offset')).toBe('6'); // 'line1\n'.length
+      expect(lines[2].getAttribute('data-offset')).toBe('12'); // 'line1\nline2\n'.length
     });
   });
 });

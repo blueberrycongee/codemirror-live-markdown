@@ -19,6 +19,10 @@ export interface CodeBlockData {
   showLineNumbers: boolean;
   /** 是否显示复制按钮 */
   showCopyButton: boolean;
+  /** 代码块在文档中的起始位置 */
+  from: number;
+  /** 代码内容在文档中的起始位置 */
+  codeFrom: number;
 }
 
 /**
@@ -45,7 +49,7 @@ export class CodeBlockWidget extends WidgetType {
    * 渲染为 DOM 元素
    */
   toDOM(): HTMLElement {
-    const { code, language, showLineNumbers, showCopyButton } = this.data;
+    const { code, language, showLineNumbers, showCopyButton, codeFrom } = this.data;
 
     // 容器
     const container = document.createElement('div');
@@ -53,6 +57,9 @@ export class CodeBlockWidget extends WidgetType {
     if (showLineNumbers) {
       container.className += ' cm-codeblock-line-numbers';
     }
+
+    // 存储代码起始位置，用于点击定位
+    container.dataset.codeFrom = String(codeFrom);
 
     // 语言标签
     if (language) {
@@ -102,13 +109,31 @@ export class CodeBlockWidget extends WidgetType {
     const result = highlightCode(code, language || undefined);
 
     if (showLineNumbers) {
-      // 按行分割并包装
-      const lines = result.html.split('\n');
-      codeEl.innerHTML = lines
-        .map((line) => `<span class="line">${line || ' '}</span>`)
+      // 按行分割并包装，每行存储其在代码中的偏移量
+      const lines = code.split('\n');
+      const highlightedLines = result.html.split('\n');
+      let offset = 0;
+
+      codeEl.innerHTML = highlightedLines
+        .map((line, idx) => {
+          const lineOffset = offset;
+          offset += (lines[idx]?.length ?? 0) + 1; // +1 for newline
+          return `<span class="line" data-offset="${lineOffset}">${line || ' '}</span>`;
+        })
         .join('\n');
     } else {
-      codeEl.innerHTML = result.html;
+      // 不显示行号时，也按行分割以支持点击定位
+      const lines = code.split('\n');
+      const highlightedLines = result.html.split('\n');
+      let offset = 0;
+
+      codeEl.innerHTML = highlightedLines
+        .map((line, idx) => {
+          const lineOffset = offset;
+          offset += (lines[idx]?.length ?? 0) + 1;
+          return `<span class="line" data-offset="${lineOffset}">${line || ' '}</span>`;
+        })
+        .join('\n');
     }
 
     pre.appendChild(codeEl);
