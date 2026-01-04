@@ -7,13 +7,7 @@
 
 import { syntaxTree } from '@codemirror/language';
 import { EditorState, Range, StateField } from '@codemirror/state';
-import {
-  Decoration,
-  DecorationSet,
-  EditorView,
-  ViewPlugin,
-  ViewUpdate,
-} from '@codemirror/view';
+import { Decoration, DecorationSet, EditorView } from '@codemirror/view';
 import { shouldShowSource } from '../core/shouldShowSource';
 import { mouseSelectingField } from '../core/mouseSelecting';
 import { createCodeBlockWidget } from '../widgets/codeBlockWidget';
@@ -83,8 +77,6 @@ function buildCodeBlockDecorations(
             language,
             showLineNumbers: options.lineNumbers,
             showCopyButton: options.copyButton,
-            from: node.from,
-            codeFrom: codeText?.from ?? node.from,
           });
 
           decorations.push(
@@ -106,66 +98,6 @@ function buildCodeBlockDecorations(
 
   return Decoration.set(decorations.sort((a, b) => a.from - b.from), true);
 }
-
-/**
- * 代码块点击处理 ViewPlugin
- *
- * 处理点击代码块 Widget 时的光标定位
- */
-const codeBlockClickHandler = ViewPlugin.fromClass(
-  class {
-    constructor(readonly view: EditorView) {
-      this.handleClick = this.handleClick.bind(this);
-      view.contentDOM.addEventListener('mousedown', this.handleClick);
-    }
-
-    handleClick(event: MouseEvent) {
-      const target = event.target as HTMLElement;
-
-      // 检查是否点击了代码块 Widget 内的行
-      const line = target.closest('.line');
-      if (!line) return;
-
-      const widget = target.closest('.cm-codeblock-widget');
-      if (!widget) return;
-
-      // 获取代码起始位置和行偏移
-      const codeFrom = parseInt(
-        (widget as HTMLElement).dataset.codeFrom || '0',
-        10
-      );
-      const lineOffset = parseInt(
-        (line as HTMLElement).dataset.offset || '0',
-        10
-      );
-
-      if (isNaN(codeFrom) || isNaN(lineOffset)) return;
-
-      // 计算目标位置
-      const targetPos = codeFrom + lineOffset;
-
-      // 延迟设置光标位置，让 CodeMirror 先处理完点击事件
-      requestAnimationFrame(() => {
-        // 确保位置在文档范围内
-        const docLength = this.view.state.doc.length;
-        const safePos = Math.min(Math.max(0, targetPos), docLength);
-
-        this.view.dispatch({
-          selection: { anchor: safePos },
-          scrollIntoView: true,
-        });
-      });
-    }
-
-    update(_update: ViewUpdate) {
-      // 不需要在更新时做任何事
-    }
-
-    destroy() {
-      this.view.contentDOM.removeEventListener('mousedown', this.handleClick);
-    }
-  }
-);
 
 /**
  * 创建代码块 StateField
@@ -215,7 +147,7 @@ let cachedOptions: Required<CodeBlockOptions> | null = null;
  * 代码块插件
  *
  * @param options - 配置选项
- * @returns Extension 数组（包含 StateField 和点击处理 ViewPlugin）
+ * @returns StateField
  *
  * @example
  * ```typescript
@@ -232,7 +164,7 @@ let cachedOptions: Required<CodeBlockOptions> | null = null;
  * })]
  * ```
  */
-export function codeBlockField(options?: CodeBlockOptions) {
+export function codeBlockField(options?: CodeBlockOptions): StateField<DecorationSet> {
   const mergedOptions = { ...defaultOptions, ...options };
 
   // 检查是否可以复用缓存
@@ -243,12 +175,12 @@ export function codeBlockField(options?: CodeBlockOptions) {
     cachedOptions.copyButton === mergedOptions.copyButton &&
     cachedOptions.defaultLanguage === mergedOptions.defaultLanguage
   ) {
-    return [cachedField, codeBlockClickHandler];
+    return cachedField;
   }
 
   // 创建新的 StateField
   cachedField = createCodeBlockField(mergedOptions);
   cachedOptions = mergedOptions;
 
-  return [cachedField, codeBlockClickHandler];
+  return cachedField;
 }
