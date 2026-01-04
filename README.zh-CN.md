@@ -20,6 +20,7 @@
 - 📝 **多种元素** - 支持加粗、斜体、标题、列表、引用等
 - 🧮 **数学公式** - KaTeX 渲染行内和块级数学公式（v0.2.0+）
 - 📊 **表格** - Markdown 表格实时预览（v0.3.0+）
+- 💻 **代码块** - lowlight 语法高亮（v0.4.0+）
 - ⚡ **性能优化** - 位置缓存、拖拽选择优化
 - 🔧 **TypeScript** - 完整的类型定义
 
@@ -52,6 +53,11 @@ npm install @codemirror/state @codemirror/view @codemirror/lang-markdown @codemi
 npm install katex
 ```
 
+**可选：代码块语法高亮（v0.4.0+）：**
+```bash
+npm install lowlight
+```
+
 ## 快速开始
 
 ```typescript
@@ -65,6 +71,7 @@ import {
   mathPlugin,
   blockMathField,
   tableField,
+  codeBlockField,
   mouseSelectingField,
   collapseOnSelectionFacet,
   editorTheme,
@@ -79,9 +86,10 @@ const state = EditorState.create({
     mouseSelectingField,
     livePreviewPlugin,
     markdownStylePlugin,
-    mathPlugin,      // 可选：行内数学公式支持
-    blockMathField,  // 可选：块级数学公式支持
-    tableField,      // 可选：表格支持
+    mathPlugin,       // 可选：行内数学公式支持
+    blockMathField,   // 可选：块级数学公式支持
+    tableField,       // 可选：表格支持
+    codeBlockField(), // 可选：代码块语法高亮
     editorTheme,
   ],
 });
@@ -133,6 +141,7 @@ document.addEventListener('mouseup', () => {
 - `mathPlugin` - 行内数学公式渲染（需要 KaTeX）
 - `blockMathField` - 块级数学公式渲染（需要 KaTeX）
 - `tableField` - 表格渲染（需要 `@lezer/markdown` Table 扩展）
+- `codeBlockField(options?)` - 代码块语法高亮（需要 lowlight）
 - `editorTheme` - 带动画的默认主题
 
 ### 状态管理
@@ -146,6 +155,9 @@ document.addEventListener('mouseup', () => {
 - `shouldShowSource(state, from, to)` - 核心判断函数
 - `renderMath(source, displayMode)` - 使用 KaTeX 渲染数学公式
 - `clearMathCache()` - 清空数学公式渲染缓存
+- `highlightCode(code, lang?)` - 使用 lowlight 高亮代码
+- `registerLanguage(name, syntax)` - 注册额外的高亮语言
+- `isLanguageRegistered(name)` - 检查语言是否已注册
 
 ## 数学公式（v0.2.0+）
 
@@ -210,6 +222,49 @@ markdown({ extensions: [Table] })
 - 支持左对齐、居中、右对齐
 - 编辑模式下源码高亮显示
 
+## 代码块（v0.4.0+）
+
+光标在代码块外时，代码块会渲染为语法高亮：
+
+````markdown
+```javascript
+function greet(name) {
+  console.log(`Hello, ${name}!`);
+}
+```
+````
+
+**使用要求：**
+1. 安装 lowlight：`npm install lowlight`
+2. 在扩展中添加 `codeBlockField()`
+
+**配置选项：**
+```typescript
+codeBlockField({
+  lineNumbers: false,      // 显示行号（默认：false）
+  copyButton: true,        // 显示复制按钮（默认：true）
+  defaultLanguage: 'text', // 未指定语言时的默认语言
+})
+```
+
+**注册额外语言：**
+```typescript
+import { registerLanguage } from 'codemirror-live-markdown';
+import rust from 'highlight.js/lib/languages/rust';
+
+registerLanguage('rust', rust);
+```
+
+**功能特性：**
+- 点击渲染的代码块进入编辑模式
+- 支持 30+ 种常用语言的语法高亮
+- 复制按钮带成功反馈
+- 可选行号显示
+- lowlight 未安装时优雅降级
+
+**支持的语言（内置）：**
+JavaScript、TypeScript、Python、Java、C、C++、C#、Go、Rust、Ruby、PHP、Swift、Kotlin、SQL、HTML、CSS、JSON、YAML、Markdown、Bash 等。
+
 ## 自定义样式
 
 使用 CSS 变量自定义颜色：
@@ -237,7 +292,7 @@ markdown({ extensions: [Table] })
 **即将推出：**
 - [x] v0.2.0-alpha: 数学公式（KaTeX）✅
 - [x] v0.3.0-alpha: 表格 ✅
-- [ ] v0.4.0-alpha: 代码块语法高亮
+- [x] v0.4.0-alpha: 代码块语法高亮 ✅
 - [ ] v0.5.0-alpha: 图片和链接
 - [ ] v1.0.0: 稳定版本
 

@@ -20,6 +20,7 @@ English | [简体中文](./README.zh-CN.md)
 - 📝 **Multiple Elements** - Bold, italic, headers, lists, quotes, and more
 - 🧮 **Math Formulas** - KaTeX rendering for inline and block math (v0.2.0+)
 - 📊 **Tables** - Live preview for Markdown tables (v0.3.0+)
+- 💻 **Code Blocks** - Syntax highlighting with lowlight (v0.4.0+)
 - ⚡ **Performance Optimized** - Position caching, drag selection optimization
 - 🔧 **TypeScript** - Full type definitions included
 
@@ -52,6 +53,11 @@ npm install @codemirror/state @codemirror/view @codemirror/lang-markdown @codemi
 npm install katex
 ```
 
+**Optional: For code block syntax highlighting (v0.4.0+):**
+```bash
+npm install lowlight
+```
+
 ## Quick Start
 
 ```typescript
@@ -65,6 +71,7 @@ import {
   mathPlugin,
   blockMathField,
   tableField,
+  codeBlockField,
   mouseSelectingField,
   collapseOnSelectionFacet,
   editorTheme,
@@ -79,9 +86,10 @@ const state = EditorState.create({
     mouseSelectingField,
     livePreviewPlugin,
     markdownStylePlugin,
-    mathPlugin,      // Optional: Inline math support
-    blockMathField,  // Optional: Block math support
-    tableField,      // Optional: Table support
+    mathPlugin,       // Optional: Inline math support
+    blockMathField,   // Optional: Block math support
+    tableField,       // Optional: Table support
+    codeBlockField(), // Optional: Code block syntax highlighting
     editorTheme,
   ],
 });
@@ -133,6 +141,7 @@ Scenario 2: Cursor at position 10 (inside "world")
 - `mathPlugin` - Inline math formula rendering (requires KaTeX)
 - `blockMathField` - Block math formula rendering (requires KaTeX)
 - `tableField` - Table rendering (requires `@lezer/markdown` Table extension)
+- `codeBlockField(options?)` - Code block syntax highlighting (requires lowlight)
 - `editorTheme` - Default theme with animations
 
 ### State Management
@@ -146,6 +155,9 @@ Scenario 2: Cursor at position 10 (inside "world")
 - `shouldShowSource(state, from, to)` - Core decision function
 - `renderMath(source, displayMode)` - Render math formula with KaTeX
 - `clearMathCache()` - Clear math rendering cache
+- `highlightCode(code, lang?)` - Highlight code with lowlight
+- `registerLanguage(name, syntax)` - Register additional language for highlighting
+- `isLanguageRegistered(name)` - Check if a language is registered
 
 ## Math Formulas (v0.2.0+)
 
@@ -210,6 +222,49 @@ markdown({ extensions: [Table] })
 - Support for left, center, right alignment
 - Edit mode with source highlighting
 
+## Code Blocks (v0.4.0+)
+
+Code blocks are rendered with syntax highlighting when cursor is outside:
+
+````markdown
+```javascript
+function greet(name) {
+  console.log(`Hello, ${name}!`);
+}
+```
+````
+
+**Requirements:**
+1. Install lowlight: `npm install lowlight`
+2. Add `codeBlockField()` to your extensions
+
+**Configuration options:**
+```typescript
+codeBlockField({
+  lineNumbers: false,      // Show line numbers (default: false)
+  copyButton: true,        // Show copy button (default: true)
+  defaultLanguage: 'text', // Default language when not specified
+})
+```
+
+**Register additional languages:**
+```typescript
+import { registerLanguage } from 'codemirror-live-markdown';
+import rust from 'highlight.js/lib/languages/rust';
+
+registerLanguage('rust', rust);
+```
+
+**Features:**
+- Click rendered code block to edit
+- Syntax highlighting for 30+ common languages
+- Copy button with success feedback
+- Optional line numbers
+- Graceful fallback when lowlight is not installed
+
+**Supported languages (built-in):**
+JavaScript, TypeScript, Python, Java, C, C++, C#, Go, Rust, Ruby, PHP, Swift, Kotlin, SQL, HTML, CSS, JSON, YAML, Markdown, Bash, and more.
+
 ## Customization
 
 Customize colors using CSS variables:
@@ -237,7 +292,7 @@ See [ROADMAP.md](./ROADMAP.md) for detailed version plan.
 **Next up:**
 - [x] v0.2.0-alpha: Math formulas (KaTeX) ✅
 - [x] v0.3.0-alpha: Tables ✅
-- [ ] v0.4.0-alpha: Code blocks with syntax highlighting
+- [x] v0.4.0-alpha: Code blocks with syntax highlighting ✅
 - [ ] v0.5.0-alpha: Images & Links
 - [ ] v1.0.0: Stable release
 
