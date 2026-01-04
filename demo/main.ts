@@ -199,7 +199,7 @@ const state = EditorState.create({
       mathPlugin,
       blockMathField,
       tableField,
-      codeBlockField(),
+      // codeBlockField(), // 暂时禁用，存在点击位置偏移问题
       imageField(),
       linkPlugin({
         openInNewTab: true,
@@ -245,7 +245,7 @@ liveBtn.addEventListener('click', () => {
       mathPlugin,
       blockMathField,
       tableField,
-      codeBlockField(),
+      // codeBlockField(), // 暂时禁用，存在点击位置偏移问题
       imageField(),
       linkPlugin({
         openInNewTab: true,

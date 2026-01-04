@@ -113,6 +113,9 @@ npm install codemirror-live-markdown@alpha
 - [ ] Copy button
 - [ ] Line numbers (optional)
 
+**Known Issues:**
+- ⚠️ 点击位置偏移问题：源码模式下 CodeMirror 的 `posAtCoords` 计算与实际渲染位置不一致，导致后续点击位置偏移。需要进一步研究 CodeMirror 的布局机制。
+
 **Breaking Changes:** None
 
 ---
