@@ -19,8 +19,7 @@ export const editorTheme = EditorView.theme({
   },
 
   '.cm-content': {
-    // 使用等宽字体，确保点击位置计算准确
-    fontFamily: "'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace",
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     padding: '16px 0',
     caretColor: 'hsl(var(--primary, 220 90% 56%))',
   },
@@ -195,7 +194,8 @@ export const editorTheme = EditorView.theme({
     display: 'block',
     overflowX: 'auto',
     cursor: 'text',
-    margin: '8px 0',
+    // 注意：不要添加 margin，会导致 Widget 高度与源码高度不一致，
+    // 从而影响 CodeMirror 的坐标计算，导致点击位置偏移
   },
   '.cm-table-widget table': {
     borderCollapse: 'collapse',
@@ -211,7 +211,7 @@ export const editorTheme = EditorView.theme({
   },
   '.cm-table-source': {
     backgroundColor: 'rgba(59, 130, 246, 0.1)',
-    fontFamily: "'JetBrains Mono', monospace !important",
+    // 移除特殊字体，使用编辑器默认字体
   },
 
   // ========== Image Styles ==========

@@ -1,12 +1,39 @@
 import { syntaxTree } from '@codemirror/language';
 import { Range } from '@codemirror/state';
-import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate } from '@codemirror/view';
+import {
+  Decoration,
+  DecorationSet,
+  EditorView,
+  ViewPlugin,
+  ViewUpdate,
+} from '@codemirror/view';
+
+/**
+ * 需要跳过的父节点类型
+ */
+const SKIP_PARENT_TYPES = new Set(['FencedCode', 'CodeBlock']);
+
+/**
+ * 检查节点是否在需要跳过的父节点内
+ */
+function isInsideSkippedParent(node: {
+  node: { parent: { name: string; parent: unknown } | null };
+}): boolean {
+  let parent = node.node.parent;
+  while (parent) {
+    if (SKIP_PARENT_TYPES.has(parent.name)) {
+      return true;
+    }
+    parent = parent.parent as { name: string; parent: unknown } | null;
+  }
+  return false;
+}
 
 /**
  * Markdown 样式插件
- * 
+ *
  * 负责给 Markdown 元素应用样式（标题大小、粗体、斜体等）
- * 
+ *
  * 注意：这个插件只负责样式应用，不处理标记的显示/隐藏
  */
 export const markdownStylePlugin = ViewPlugin.fromClass(
@@ -44,13 +71,22 @@ export const markdownStylePlugin = ViewPlugin.fromClass(
       syntaxTree(view.state).iterate({
         enter: (node) => {
           const cls = styleMap[node.name];
-          if (cls) {
-            decorations.push(Decoration.mark({ class: cls }).range(node.from, node.to));
+          if (!cls) return;
 
-            // 标题还需要行级装饰
-            if (node.name.startsWith('ATXHeading')) {
-              decorations.push(Decoration.line({ class: 'cm-heading-line' }).range(node.from));
-            }
+          // 跳过代码块内的节点
+          if (isInsideSkippedParent(node)) {
+            return;
+          }
+
+          decorations.push(
+            Decoration.mark({ class: cls }).range(node.from, node.to)
+          );
+
+          // 标题还需要行级装饰
+          if (node.name.startsWith('ATXHeading')) {
+            decorations.push(
+              Decoration.line({ class: 'cm-heading-line' }).range(node.from)
+            );
           }
         },
       });

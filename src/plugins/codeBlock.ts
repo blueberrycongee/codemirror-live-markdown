@@ -127,11 +127,6 @@ function createCodeBlockClickHandler() {
       const customEvent = event as CustomEvent<{ targetPos: number }>;
       const targetPos = customEvent.detail.targetPos;
 
-      console.log(
-        '[CodeBlock Handler] codeblock-click received, targetPos:',
-        targetPos
-      );
-
       // 设置光标位置
       view.dispatch({
         selection: { anchor: targetPos },
@@ -142,86 +137,6 @@ function createCodeBlockClickHandler() {
       view.focus();
 
       return true;
-    },
-
-    // 调试：监听源码模式下的 mousedown
-    mousedown: (event: MouseEvent, view) => {
-      const target = event.target as HTMLElement;
-
-      // 检查是否点击在代码块源码区域
-      const sourceLine = target.closest('.cm-codeblock-source');
-      if (!sourceLine) {
-        return false; // 不是代码块，让 CodeMirror 默认处理
-      }
-
-      // 获取点击坐标
-      const { clientX, clientY } = event;
-
-      // 使用 CodeMirror 的 posAtCoords 计算位置
-      const cmPos = view.posAtCoords({ x: clientX, y: clientY });
-
-      // 获取点击位置的行信息
-      const line = sourceLine.closest('.cm-line');
-      const lineRect = line?.getBoundingClientRect();
-
-      // 获取行内的文本内容
-      const lineText = line?.textContent || '';
-
-      // 计算相对于行的点击位置
-      const relativeX = lineRect ? clientX - lineRect.left : 0;
-
-      // 获取计算样式
-      const style = line ? window.getComputedStyle(line) : null;
-      const paddingLeft = style ? parseFloat(style.paddingLeft) : 0;
-      const fontSize = style ? parseFloat(style.fontSize) : 16;
-      const fontFamily = style?.fontFamily || 'monospace';
-
-      // 使用 Canvas 测量预期位置
-      let expectedCharOffset = 0;
-      const textX = relativeX - paddingLeft;
-      if (textX > 0) {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.font = `${fontSize}px ${fontFamily}`;
-          for (let i = 0; i <= lineText.length; i++) {
-            const width = ctx.measureText(lineText.substring(0, i)).width;
-            if (width > textX) break;
-            expectedCharOffset = i;
-          }
-        }
-      }
-
-      // 获取行的文档位置
-      let lineDocPos = 0;
-      if (line) {
-        const linePos = view.posAtDOM(line);
-        if (linePos !== null) {
-          lineDocPos = linePos;
-        }
-      }
-
-      const expectedPos = lineDocPos + expectedCharOffset;
-
-      console.log('[CodeBlock Debug] Source mode mousedown:', {
-        clientX,
-        clientY,
-        cmPos,
-        expectedPos,
-        diff: cmPos !== null ? cmPos - expectedPos : 'N/A',
-        lineText: lineText.substring(0, 50) + (lineText.length > 50 ? '...' : ''),
-        lineDocPos,
-        relativeX,
-        paddingLeft,
-        textX,
-        expectedCharOffset,
-        fontSize,
-        fontFamily: fontFamily.substring(0, 50),
-      });
-
-      // 不拦截事件，让 CodeMirror 继续处理
-      // 这样我们可以看到 CodeMirror 实际设置的位置
-      return false;
     },
   });
 }
@@ -297,12 +212,8 @@ function createCodeBlockField(
 export function codeBlockField(options?: CodeBlockOptions) {
   const mergedOptions = { ...defaultOptions, ...options };
 
-  // 暂时禁用缓存以便调试
-  // 创建新的 StateField 和点击处理器
   const field = createCodeBlockField(mergedOptions);
   const clickHandler = createCodeBlockClickHandler();
-
-  console.log('[CodeBlock] Creating new field and click handler');
 
   return [field, clickHandler];
 }

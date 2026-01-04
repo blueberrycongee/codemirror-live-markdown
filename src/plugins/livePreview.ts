@@ -6,6 +6,29 @@ import { mouseSelectingField } from '../core/mouseSelecting';
 import { checkUpdateAction } from '../core/pluginUpdateHelper';
 
 /**
+ * 需要跳过的父节点类型
+ * 这些节点内的标记不应该被处理
+ */
+const SKIP_PARENT_TYPES = new Set([
+  'FencedCode',
+  'CodeBlock',
+]);
+
+/**
+ * 检查节点是否在需要跳过的父节点内
+ */
+function isInsideSkippedParent(node: { node: { parent: { name: string; parent: unknown } | null } }): boolean {
+  let parent = node.node.parent;
+  while (parent) {
+    if (SKIP_PARENT_TYPES.has(parent.name)) {
+      return true;
+    }
+    parent = parent.parent as { name: string; parent: unknown } | null;
+  }
+  return false;
+}
+
+/**
  * Live Preview 插件
  * 
  * 负责处理行内标记（加粗、斜体、删除线等）和块级标记（标题、列表、引用）的动画显示/隐藏
@@ -59,6 +82,11 @@ export const livePreviewPlugin = ViewPlugin.fromClass(
           ];
 
           if (!markTypes.includes(node.name)) return;
+
+          // 跳过代码块内的标记
+          if (isInsideSkippedParent(node)) {
+            return;
+          }
 
           // 跳过数学公式的 CodeMark（由 mathPlugin 处理）
           if (node.name === 'CodeMark') {
