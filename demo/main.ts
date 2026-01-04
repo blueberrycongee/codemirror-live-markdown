@@ -2,6 +2,7 @@ import { EditorState, Compartment } from '@codemirror/state';
 import { EditorView, keymap } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
+import { Table } from '@lezer/markdown';
 
 // Import from npm package
 import {
@@ -9,6 +10,7 @@ import {
   markdownStylePlugin,
   mathPlugin,
   blockMathField,
+  tableField,
   mouseSelectingField,
   collapseOnSelectionFacet,
   editorTheme,
@@ -55,6 +57,22 @@ Move your cursor into any of these formatted elements:
 \`\`\`
 
 Click on any formula to edit it!
+
+### Tables 📊
+
+Tables are rendered as HTML when you're not editing them:
+
+| Name  | Age | City     |
+|-------|-----|----------|
+| Alice | 25  | Beijing  |
+| Bob   | 30  | Shanghai |
+
+Try clicking on the table to edit it! You can also use alignment:
+
+| Left | Center | Right |
+|:-----|:------:|------:|
+| L    |   C    |     R |
+| 1    |   2    |     3 |
 
 ### How does it work?
 
@@ -111,7 +129,7 @@ const state = EditorState.create({
     // Basic extensions
     history(),
     keymap.of([...defaultKeymap, ...historyKeymap]),
-    markdown({ base: markdownLanguage }),
+    markdown({ base: markdownLanguage, extensions: [Table] }),
     EditorView.lineWrapping,
 
     // Live Preview extensions (in a compartment for dynamic switching)
@@ -122,6 +140,7 @@ const state = EditorState.create({
       markdownStylePlugin,
       mathPlugin,
       blockMathField,
+      tableField,
     ]),
 
     // Theme
@@ -159,6 +178,7 @@ liveBtn.addEventListener('click', () => {
       markdownStylePlugin,
       mathPlugin,
       blockMathField,
+      tableField,
     ]),
   });
   liveBtn.classList.add('active');

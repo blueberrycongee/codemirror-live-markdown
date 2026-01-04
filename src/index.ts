@@ -17,6 +17,7 @@ export type { UpdateAction } from './core/pluginUpdateHelper';
 export { livePreviewPlugin } from './plugins/livePreview';
 export { markdownStylePlugin } from './plugins/markdownStyle';
 export { mathPlugin, blockMathField } from './plugins/math';
+export { tableField } from './plugins/table';
 
 // Theme
 export { editorTheme } from './theme/default';
