@@ -1,5 +1,5 @@
 /**
- * 代码块 Widget 测试
+ * Code Block Widget Tests
  */
 
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
@@ -17,7 +17,7 @@ Object.defineProperty(navigator, 'clipboard', {
 });
 
 /**
- * 创建测试用的 CodeBlockData
+ * Create test CodeBlockData
  */
 function createTestData(
   overrides: Partial<CodeBlockData> = {}
@@ -37,7 +37,7 @@ function createTestData(
 
 describe('CodeBlockWidget', () => {
   beforeAll(async () => {
-    // 异步初始化高亮器
+    // Initialize highlighter asynchronously
     await initHighlighter();
   });
 
@@ -67,10 +67,10 @@ describe('CodeBlockWidget', () => {
       const code = dom.querySelector('code');
       
       if (isHighlighterAvailable()) {
-        // 高亮后应该包含 hljs 相关的 span
+        // Should contain hljs-related spans after highlighting
         expect(code?.innerHTML).toContain('hljs');
       } else {
-        // 高亮器不可用时，应该有转义后的代码
+        // When highlighter is not available, should have escaped code
         expect(code?.innerHTML).toBeDefined();
         console.warn('Highlighter not available, syntax highlighting test skipped');
       }
@@ -85,7 +85,7 @@ describe('CodeBlockWidget', () => {
       );
 
       const dom = widget.toDOM();
-      // 语言标签显示在 fence 行中
+      // Language label is displayed in fence line
       const fenceLine = dom.querySelector('.cm-codeblock-fence');
       expect(fenceLine).not.toBeNull();
       expect(fenceLine?.textContent).toContain('python');
@@ -123,7 +123,7 @@ describe('CodeBlockWidget', () => {
       const dom = widget.toDOM();
       expect(dom.className).toContain('cm-codeblock-line-numbers');
       const lines = dom.querySelectorAll('.cm-codeblock-line');
-      // 5 行 = 1 fence 开始 + 3 代码行 + 1 fence 结束
+      // 5 lines = 1 fence start + 3 code lines + 1 fence end
       expect(lines.length).toBe(5);
     });
 
@@ -172,7 +172,7 @@ describe('CodeBlockWidget', () => {
 
       copyBtn.click();
 
-      // 等待异步操作完成
+      // Wait for async operation to complete
       await vi.waitFor(() => {
         expect(copyBtn.textContent).toBe('Copied!');
       });
@@ -194,10 +194,10 @@ describe('CodeBlockWidget', () => {
         '.cm-codeblock-copy'
       ) as HTMLButtonElement;
 
-      // 点击不应该抛出错误
+      // Click should not throw
       copyBtn.click();
 
-      // 等待异步操作完成，应该显示失败状态
+      // Wait for async operation, should show failure state
       await vi.waitFor(() => {
         expect(copyBtn.textContent).toBe('Failed');
       });
@@ -266,7 +266,7 @@ describe('CodeBlockWidget', () => {
         '.cm-codeblock-copy'
       ) as HTMLButtonElement;
 
-      // 按钮应该可以通过键盘访问
+      // Button should be keyboard accessible
       expect(copyBtn.tagName).toBe('BUTTON');
       expect(copyBtn.type).toBe('button');
     });
@@ -317,15 +317,15 @@ describe('CodeBlockWidget', () => {
       const dom = widget.toDOM();
       const lines = dom.querySelectorAll('.cm-codeblock-line');
 
-      // 5 行 = 1 fence 开始 + 3 代码行 + 1 fence 结束
+      // 5 lines = 1 fence start + 3 code lines + 1 fence end
       expect(lines.length).toBe(5);
-      // fence 开始行索引为 -1
+      // Fence start line index is -1
       expect((lines[0] as HTMLElement).dataset.lineIndex).toBe('-1');
-      // 代码行索引从 0 开始
+      // Code line indices start from 0
       expect((lines[1] as HTMLElement).dataset.lineIndex).toBe('0');
       expect((lines[2] as HTMLElement).dataset.lineIndex).toBe('1');
       expect((lines[3] as HTMLElement).dataset.lineIndex).toBe('2');
-      // fence 结束行索引为 -2
+      // Fence end line index is -2
       expect((lines[4] as HTMLElement).dataset.lineIndex).toBe('-2');
     });
   });

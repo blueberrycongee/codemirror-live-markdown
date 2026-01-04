@@ -1,30 +1,30 @@
 /**
- * 代码高亮工具
+ * Code Highlighting Utility
  *
- * 封装 lowlight 提供代码语法高亮功能
- * 支持按需加载语言，优雅降级处理
+ * Wraps lowlight to provide syntax highlighting functionality
+ * Supports on-demand language loading with graceful degradation
  */
 
 import type { LanguageFn } from 'highlight.js';
 
 /**
- * 高亮结果接口
+ * Highlight result interface
  */
 export interface HighlightResult {
-  /** 高亮后的 HTML 字符串 */
+  /** Highlighted HTML string */
   html: string;
-  /** 语言标识 */
+  /** Language identifier */
   language: string;
-  /** 是否为自动检测的语言 */
+  /** Whether the language was auto-detected */
   detected: boolean;
 }
 
-// lowlight 实例（延迟初始化）
+// lowlight instance (lazy initialization)
 let lowlightInstance: any = null;
 let lowlightAvailable: boolean | null = null;
 
 /**
- * 转义 HTML 特殊字符
+ * Escape HTML special characters
  */
 function escapeHtml(text: string): string {
   return text
@@ -36,7 +36,7 @@ function escapeHtml(text: string): string {
 }
 
 /**
- * 将 HAST 节点转换为 HTML 字符串
+ * Convert HAST node to HTML string
  */
 function hastToHtml(node: any): string {
   if (!node) return '';
@@ -60,16 +60,16 @@ function hastToHtml(node: any): string {
   return '';
 }
 
-// 缓存的 lowlight 模块
+// Cached lowlight module
 let lowlightModule: { createLowlight: any; common: any } | null = null;
 
-// 尝试加载 lowlight 模块
+// Try to load lowlight module
 async function loadLowlightModule(): Promise<boolean> {
   if (lowlightModule !== null) {
     return true;
   }
   try {
-    // 动态导入 ESM 模块
+    // Dynamic import for ESM module
     const mod = await import('lowlight');
     lowlightModule = mod;
     return true;
@@ -78,13 +78,13 @@ async function loadLowlightModule(): Promise<boolean> {
   }
 }
 
-// 同步初始化（用于测试和首次调用）
+// Synchronous initialization (for tests and first call)
 function initLowlightSync(): boolean {
   if (lowlightAvailable !== null) {
     return lowlightAvailable;
   }
 
-  // 如果模块已经加载，使用它
+  // If module is already loaded, use it
   if (lowlightModule) {
     try {
       lowlightInstance = lowlightModule.createLowlight(lowlightModule.common);
@@ -96,7 +96,7 @@ function initLowlightSync(): boolean {
     }
   }
 
-  // 尝试同步 require（可能在某些环境下工作）
+  // Try synchronous require (may work in some environments)
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { createLowlight, common } = require('lowlight');
@@ -104,14 +104,14 @@ function initLowlightSync(): boolean {
     lowlightAvailable = true;
     return true;
   } catch {
-    // 如果同步加载失败，标记为不可用
-    // 异步加载会在后台尝试
+    // If sync loading fails, mark as unavailable
+    // Async loading will try in background
     lowlightAvailable = false;
     return false;
   }
 }
 
-// 异步初始化（推荐使用）
+// Async initialization (recommended)
 async function initLowlightAsync(): Promise<boolean> {
   if (lowlightAvailable === true && lowlightInstance) {
     return true;
@@ -134,38 +134,38 @@ async function initLowlightAsync(): Promise<boolean> {
 }
 
 /**
- * 重置高亮器（用于测试）
+ * Reset highlighter (for testing)
  */
 export function resetHighlighter(): void {
   lowlightInstance = null;
   lowlightAvailable = null;
-  // 不自动初始化，让测试控制初始化时机
+  // Don't auto-initialize, let tests control initialization timing
 }
 
 /**
- * 异步初始化高亮器
- * 推荐在应用启动时调用
+ * Initialize highlighter asynchronously
+ * Recommended to call at application startup
  */
 export async function initHighlighter(): Promise<boolean> {
   return initLowlightAsync();
 }
 
 /**
- * 检查高亮器是否可用
+ * Check if highlighter is available
  */
 export function isHighlighterAvailable(): boolean {
   return lowlightAvailable === true && lowlightInstance !== null;
 }
 
 /**
- * 高亮代码
+ * Highlight code
  *
- * @param code - 源代码
- * @param lang - 语言标识（可选，不传则自动检测）
- * @returns 高亮结果
+ * @param code - Source code
+ * @param lang - Language identifier (optional, auto-detect if not provided)
+ * @returns Highlight result
  */
 export function highlightCode(code: string, lang?: string): HighlightResult {
-  // 空代码直接返回
+  // Return early for empty code
   if (!code) {
     return {
       html: '',
@@ -174,9 +174,9 @@ export function highlightCode(code: string, lang?: string): HighlightResult {
     };
   }
 
-  // 确保 lowlight 已初始化
+  // Ensure lowlight is initialized
   if (!initLowlightSync()) {
-    // lowlight 不可用，返回转义后的纯文本
+    // lowlight not available, return escaped plain text
     return {
       html: escapeHtml(code),
       language: lang || 'text',
@@ -186,7 +186,7 @@ export function highlightCode(code: string, lang?: string): HighlightResult {
 
   try {
     if (lang) {
-      // 指定语言
+      // Specified language
       if (lowlightInstance.registered(lang)) {
         const result = lowlightInstance.highlight(lang, code);
         return {
@@ -195,7 +195,7 @@ export function highlightCode(code: string, lang?: string): HighlightResult {
           detected: false,
         };
       } else {
-        // 语言未注册，返回纯文本
+        // Language not registered, return plain text
         return {
           html: escapeHtml(code),
           language: lang,
@@ -203,7 +203,7 @@ export function highlightCode(code: string, lang?: string): HighlightResult {
         };
       }
     } else {
-      // 自动检测语言
+      // Auto-detect language
       const result = lowlightInstance.highlightAuto(code);
       return {
         html: hastToHtml(result),
@@ -212,7 +212,7 @@ export function highlightCode(code: string, lang?: string): HighlightResult {
       };
     }
   } catch {
-    // 高亮失败，返回纯文本
+    // Highlighting failed, return plain text
     return {
       html: escapeHtml(code),
       language: lang || 'text',
@@ -222,10 +222,10 @@ export function highlightCode(code: string, lang?: string): HighlightResult {
 }
 
 /**
- * 注册语言
+ * Register a language
  *
- * @param name - 语言名称
- * @param syntax - 语言定义函数
+ * @param name - Language name
+ * @param syntax - Language definition function
  */
 export function registerLanguage(name: string, syntax: LanguageFn): void {
   if (!initLowlightSync()) {
@@ -241,10 +241,10 @@ export function registerLanguage(name: string, syntax: LanguageFn): void {
 }
 
 /**
- * 检查语言是否已注册
+ * Check if a language is registered
  *
- * @param name - 语言名称
- * @returns 是否已注册
+ * @param name - Language name
+ * @returns Whether the language is registered
  */
 export function isLanguageRegistered(name: string): boolean {
   if (!initLowlightSync()) {

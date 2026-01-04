@@ -1,5 +1,5 @@
 /**
- * 代码高亮工具测试
+ * Code Highlighting Utility Tests
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -15,13 +15,13 @@ import {
 describe('highlightCode', () => {
   beforeEach(async () => {
     resetHighlighter();
-    // 异步初始化高亮器
+    // Initialize highlighter asynchronously
     await initHighlighter();
   });
 
   describe('basic highlighting', () => {
     it('should highlight JavaScript code', () => {
-      // 如果高亮器不可用，跳过测试
+      // Skip test if highlighter is not available
       if (!isHighlighterAvailable()) {
         console.warn('Highlighter not available, skipping test');
         return;
@@ -69,7 +69,7 @@ describe('highlightCode', () => {
       }
       const result = highlightCode('function hello() { return 42; }');
       expect(result.detected).toBe(true);
-      // 自动检测可能返回不同语言，只要检测到即可
+      // Auto-detection may return different languages, just verify detection occurred
       expect(result.html).toContain('hljs');
     });
 
@@ -84,7 +84,7 @@ describe('highlightCode', () => {
 
     it('should fallback to text when detection fails', () => {
       const result = highlightCode('x');
-      // 对于非常短的代码，可能无法检测
+      // For very short code, detection may fail
       expect(result.html).toBeDefined();
     });
   });
@@ -92,7 +92,7 @@ describe('highlightCode', () => {
   describe('language registration', () => {
     it('should check if language is registered', () => {
       if (!isHighlighterAvailable()) {
-        // 高亮器不可用时，所有语言都应该返回 false
+        // When highlighter is not available, all languages should return false
         expect(isLanguageRegistered('javascript')).toBe(false);
         expect(isLanguageRegistered('nonexistent')).toBe(false);
         return;
@@ -106,7 +106,7 @@ describe('highlightCode', () => {
         console.warn('Highlighter not available, skipping test');
         return;
       }
-      // 模拟注册一个语言
+      // Mock registering a language
       const mockLang = () => ({
         name: 'testlang',
         keywords: { keyword: 'test' },
@@ -120,7 +120,7 @@ describe('highlightCode', () => {
         name: 'test',
         keywords: { keyword: 'test' },
       });
-      // 重复注册不应抛出错误
+      // Duplicate registration should not throw
       expect(() => {
         registerLanguage('testlang2', mockLang as any);
         registerLanguage('testlang2', mockLang as any);
@@ -137,7 +137,7 @@ describe('highlightCode', () => {
 
     it('should handle code with special characters', () => {
       const result = highlightCode('<div>&amp;</div>', 'html');
-      // HTML 特殊字符应该被正确处理
+      // HTML special characters should be handled correctly
       expect(result.html).toBeDefined();
     });
 
@@ -150,7 +150,7 @@ describe('highlightCode', () => {
 
     it('should escape HTML in code', () => {
       const result = highlightCode('<script>alert("xss")</script>', 'text');
-      // 应该转义 HTML 标签
+      // Should escape HTML tags
       expect(result.html).not.toContain('<script>');
       expect(result.html).toContain('&lt;');
     });
@@ -159,8 +159,8 @@ describe('highlightCode', () => {
 
 describe('lowlight not installed fallback', () => {
   it('should gracefully handle missing lowlight', async () => {
-    // 这个测试验证当 lowlight 未安装时的降级行为
-    // 实际测试中 lowlight 已安装，所以这里只验证接口存在
+    // This test verifies graceful degradation when lowlight is not installed
+    // In actual tests lowlight is installed, so we just verify the interface exists
     expect(typeof highlightCode).toBe('function');
     expect(typeof registerLanguage).toBe('function');
     expect(typeof isLanguageRegistered).toBe('function');
