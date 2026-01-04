@@ -102,19 +102,17 @@ npm install codemirror-live-markdown@alpha
 
 ---
 
-### 🔮 v0.4.0-alpha.1
-**ETA:** 3-4 weeks  
+### ✅ v0.4.0-alpha.1
+**Status:** Released  
 **Focus:** Code blocks
 
-**Planned Features:**
-- [ ] Syntax highlighting (lowlight)
-- [ ] Language detection
-- [ ] Code block widget
-- [ ] Copy button
-- [ ] Line numbers (optional)
-
-**Known Issues:**
-- ⚠️ 点击位置偏移问题：源码模式下 CodeMirror 的 `posAtCoords` 计算与实际渲染位置不一致，导致后续点击位置偏移。需要进一步研究 CodeMirror 的布局机制。
+**Features:**
+- ✅ Syntax highlighting (highlight.js)
+- ✅ Language detection
+- ✅ Code block widget
+- ✅ Copy button
+- ✅ Line numbers (optional)
+- ✅ Click to edit
 
 **Breaking Changes:** None
 
