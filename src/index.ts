@@ -20,6 +20,10 @@ export { mathPlugin, blockMathField } from './plugins/math';
 export { tableField } from './plugins/table';
 export { codeBlockField } from './plugins/codeBlock';
 export type { CodeBlockOptions } from './plugins/codeBlock';
+export { imageField } from './plugins/image';
+export type { ImageOptions } from './plugins/image';
+export { linkPlugin } from './plugins/link';
+export type { LinkOptions } from './plugins/link';
 
 // Theme
 export { editorTheme } from './theme/default';
@@ -28,6 +32,8 @@ export { editorTheme } from './theme/default';
 export { renderMath, clearMathCache } from './utils/mathCache';
 export { highlightCode, registerLanguage, isLanguageRegistered } from './utils/codeHighlight';
 export type { HighlightResult } from './utils/codeHighlight';
+export { loadImage, preloadImages, clearImageCache, resolveImagePath } from './utils/imageLoader';
+export type { LoadedImage, LoadImageOptions } from './utils/imageLoader';
 
 // Re-export types from CodeMirror for convenience
 export type { Extension } from '@codemirror/state';

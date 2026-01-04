@@ -12,6 +12,8 @@ import {
   blockMathField,
   tableField,
   codeBlockField,
+  imageField,
+  linkPlugin,
   mouseSelectingField,
   collapseOnSelectionFacet,
   editorTheme,
@@ -108,6 +110,28 @@ const user: User = { name: 'Alice', age: 25 };
 
 Click on any code block to edit it!
 
+### Images 🖼️
+
+Images are rendered inline when you're not editing them:
+
+![CodeMirror Logo](https://codemirror.net/style/logo.svg)
+
+![Placeholder Image](https://picsum.photos/400/200 "A placeholder image")
+
+Click on any image to see the Markdown syntax!
+
+### Links 🔗
+
+Links are rendered as clickable text:
+
+- [CodeMirror Website](https://codemirror.net)
+- [GitHub](https://github.com "Visit GitHub")
+- Check out the [documentation](https://codemirror.net/docs/)
+
+**Wiki-style links:** [[Internal Page]] and [[Another Page|Custom Text]]
+
+Click on any link to edit it!
+
 ### How does it work?
 
 When your cursor is **outside** formatted text, the markers are hidden and you see the rendered effect. When you move your cursor **inside**, the markers smoothly animate into view so you can edit them.
@@ -176,6 +200,13 @@ const state = EditorState.create({
       blockMathField,
       tableField,
       codeBlockField(),
+      imageField(),
+      linkPlugin({
+        openInNewTab: true,
+        onWikiLinkClick: (link) => {
+          alert(`Wiki link clicked: ${link}`);
+        },
+      }),
     ]),
 
     // Theme
@@ -215,6 +246,13 @@ liveBtn.addEventListener('click', () => {
       blockMathField,
       tableField,
       codeBlockField(),
+      imageField(),
+      linkPlugin({
+        openInNewTab: true,
+        onWikiLinkClick: (link) => {
+          alert(`Wiki link clicked: ${link}`);
+        },
+      }),
     ]),
   });
   liveBtn.classList.add('active');

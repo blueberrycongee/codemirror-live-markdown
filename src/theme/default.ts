@@ -216,7 +216,56 @@ export const editorTheme = EditorView.theme({
   // ========== Image Styles ==========
   '.cm-image-widget': {
     display: 'block',
-    margin: '8px 0',
+    margin: '12px 0',
+    cursor: 'pointer',
+  },
+  '.cm-image-widget img': {
+    maxWidth: '100%',
+    borderRadius: '6px',
+    display: 'block',
+  },
+  '.cm-image-loading': {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    minHeight: '100px',
+    backgroundColor: 'hsl(var(--muted, 220 14% 96%))',
+    borderRadius: '6px',
+    color: 'hsl(var(--muted-foreground, 220 9% 46%))',
+    fontSize: '14px',
+  },
+  '.cm-image-spinner': {
+    width: '16px',
+    height: '16px',
+    border: '2px solid hsl(var(--muted-foreground, 220 9% 46%) / 0.3)',
+    borderTopColor: 'hsl(var(--muted-foreground, 220 9% 46%))',
+    borderRadius: '50%',
+    animation: 'spin 0.8s linear infinite',
+  },
+  '.cm-image-error': {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    minHeight: '60px',
+    backgroundColor: 'hsl(0 84% 95%)',
+    borderRadius: '6px',
+    color: 'hsl(0 84% 40%)',
+    fontSize: '14px',
+  },
+  '.cm-image-error-icon': {
+    fontSize: '18px',
+  },
+  '.cm-image-alt': {
+    fontSize: '12px',
+    color: 'hsl(var(--muted-foreground, 220 9% 46%))',
+    marginTop: '4px',
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  '.cm-image-source': {
+    backgroundColor: 'rgba(236, 72, 153, 0.1)',
   },
   '.cm-image-info': {
     background: 'hsl(var(--muted, 220 14% 96%))',
@@ -231,6 +280,49 @@ export const editorTheme = EditorView.theme({
     maxWidth: '100%',
     borderRadius: '6px',
     cursor: 'pointer',
+  },
+
+  // ========== Link Styles ==========
+  '.cm-link-widget': {
+    color: 'hsl(var(--primary, 220 90% 56%))',
+    textDecoration: 'underline',
+    cursor: 'pointer',
+    transition: 'color 0.15s',
+  },
+  '.cm-link-widget:hover': {
+    color: 'hsl(var(--primary, 220 90% 56%) / 0.8)',
+  },
+  '.cm-wikilink-widget': {
+    color: 'hsl(var(--primary, 220 90% 56%))',
+    textDecoration: 'none',
+    borderBottom: '1px dashed currentColor',
+    cursor: 'pointer',
+  },
+  '.cm-link-source': {
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+  },
+  '.cm-wikilink-source': {
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+  },
+  '.cm-link-preview': {
+    position: 'absolute',
+    bottom: '100%',
+    left: '0',
+    padding: '4px 8px',
+    backgroundColor: 'hsl(var(--background, 0 0% 100%))',
+    border: '1px solid hsl(var(--border, 220 13% 91%))',
+    borderRadius: '4px',
+    fontSize: '12px',
+    color: 'hsl(var(--muted-foreground, 220 9% 46%))',
+    whiteSpace: 'nowrap',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+    zIndex: '10',
+  },
+
+  // ========== Animation Keyframes ==========
+  '@keyframes spin': {
+    from: { transform: 'rotate(0deg)' },
+    to: { transform: 'rotate(360deg)' },
   },
 
   // ========== Code Block Styles ==========
