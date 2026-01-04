@@ -122,66 +122,17 @@ function buildCodeBlockDecorations(
  */
 function createCodeBlockClickHandler() {
   return EditorView.domEventHandlers({
-    mousedown: (event, view) => {
-      const target = event.target as HTMLElement;
+    // 监听自定义事件（来自 Widget）
+    'codeblock-click': (event: Event, view) => {
+      const customEvent = event as CustomEvent<{ targetPos: number }>;
+      const targetPos = customEvent.detail.targetPos;
 
-      // 查找代码块 Widget 容器
-      const widget = target.closest('.cm-codeblock-widget');
-      if (!widget) {
-        return false;
-      }
-
-      // 检查是否点击了复制按钮
-      if (target.closest('.cm-codeblock-copy')) {
-        return false;
-      }
-
-      // 获取位置信息
-      const fromStr = (widget as HTMLElement).dataset.from;
-      const lineStartsStr = (widget as HTMLElement).dataset.lineStarts;
-
-      if (!fromStr || !lineStartsStr) {
-        return false;
-      }
-
-      const from = parseInt(fromStr, 10);
-      const lineStarts: number[] = JSON.parse(lineStartsStr);
-
-      // 查找点击的行
-      const lineEl = target.closest('.cm-codeblock-line');
-      let targetPos = from;
-
-      if (lineEl) {
-        const lineIndex = parseInt(
-          (lineEl as HTMLElement).dataset.lineIndex || '0',
-          10
-        );
-        if (lineIndex >= 0 && lineIndex < lineStarts.length) {
-          targetPos = lineStarts[lineIndex];
-
-          // 尝试计算列位置
-          const pre = widget.querySelector('pre');
-          if (pre) {
-            const rect = lineEl.getBoundingClientRect();
-            const clickX = event.clientX - rect.left;
-
-            // 估算字符宽度（使用等宽字体）
-            const style = window.getComputedStyle(pre);
-            const fontSize = parseFloat(style.fontSize) || 14;
-            const charWidth = fontSize * 0.6; // 等宽字体的大致比例
-
-            const charOffset = Math.floor(clickX / charWidth);
-            const lineText =
-              lineEl.textContent || '';
-            const maxOffset = lineText.length;
-
-            targetPos += Math.min(charOffset, maxOffset);
-          }
-        }
-      }
+      console.log(
+        '[CodeBlock Handler] codeblock-click received, targetPos:',
+        targetPos
+      );
 
       // 设置光标位置
-      event.preventDefault();
       view.dispatch({
         selection: { anchor: targetPos },
         scrollIntoView: true,
@@ -237,11 +188,10 @@ function createCodeBlockField(
   });
 }
 
-// 缓存 StateField 实例
-let cachedField: StateField<DecorationSet> | null = null;
-let cachedOptions: Required<CodeBlockOptions> | null = null;
-let cachedClickHandler: ReturnType<typeof createCodeBlockClickHandler> | null =
-  null;
+// 缓存 StateField 实例（暂时禁用）
+// let cachedField: StateField<DecorationSet> | null = null;
+// let cachedOptions: Required<CodeBlockOptions> | null = null;
+// let cachedClickHandler: ReturnType<typeof createCodeBlockClickHandler> | null = null;
 
 /**
  * 代码块插件
@@ -267,22 +217,12 @@ let cachedClickHandler: ReturnType<typeof createCodeBlockClickHandler> | null =
 export function codeBlockField(options?: CodeBlockOptions) {
   const mergedOptions = { ...defaultOptions, ...options };
 
-  // 检查是否可以复用缓存
-  if (
-    cachedField &&
-    cachedOptions &&
-    cachedClickHandler &&
-    cachedOptions.lineNumbers === mergedOptions.lineNumbers &&
-    cachedOptions.copyButton === mergedOptions.copyButton &&
-    cachedOptions.defaultLanguage === mergedOptions.defaultLanguage
-  ) {
-    return [cachedField, cachedClickHandler];
-  }
-
+  // 暂时禁用缓存以便调试
   // 创建新的 StateField 和点击处理器
-  cachedField = createCodeBlockField(mergedOptions);
-  cachedOptions = mergedOptions;
-  cachedClickHandler = createCodeBlockClickHandler();
+  const field = createCodeBlockField(mergedOptions);
+  const clickHandler = createCodeBlockClickHandler();
 
-  return [cachedField, cachedClickHandler];
+  console.log('[CodeBlock] Creating new field and click handler');
+
+  return [field, clickHandler];
 }

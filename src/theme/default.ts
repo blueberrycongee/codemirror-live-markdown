@@ -374,6 +374,7 @@ export const editorTheme = EditorView.theme({
   },
   '.cm-codeblock-source': {
     backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
   },
   '.cm-codeblock-line-numbers': {
     counterReset: 'line',
