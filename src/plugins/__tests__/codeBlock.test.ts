@@ -185,7 +185,7 @@ describe('codeBlockField', () => {
       view = createEditor(doc, 0);
 
       // 初始状态应该显示 widget
-      let widget = view.dom.querySelector('.cm-codeblock-widget');
+      const widget = view.dom.querySelector('.cm-codeblock-widget');
       expect(widget).not.toBeNull();
 
       // 移动光标到代码块内

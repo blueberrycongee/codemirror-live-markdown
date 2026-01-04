@@ -72,11 +72,11 @@ function buildCodeBlockDecorations(
         // 计算每行的起始位置
         const lineStarts: number[] = [];
         if (codeText) {
-          let pos = codeText.from;
-          lineStarts.push(pos);
+          const startPos = codeText.from;
+          lineStarts.push(startPos);
           for (let i = 0; i < code.length; i++) {
             if (code[i] === '\n') {
-              lineStarts.push(pos + i + 1);
+              lineStarts.push(startPos + i + 1);
             }
           }
         }

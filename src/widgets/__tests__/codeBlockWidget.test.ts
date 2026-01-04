@@ -72,9 +72,10 @@ describe('CodeBlockWidget', () => {
       );
 
       const dom = widget.toDOM();
-      const langLabel = dom.querySelector('.cm-codeblock-lang');
-      expect(langLabel).not.toBeNull();
-      expect(langLabel?.textContent).toBe('python');
+      // 语言标签显示在 fence 行中
+      const fenceLine = dom.querySelector('.cm-codeblock-fence');
+      expect(fenceLine).not.toBeNull();
+      expect(fenceLine?.textContent).toContain('python');
     });
 
     it('should render copy button when enabled', () => {
@@ -109,7 +110,8 @@ describe('CodeBlockWidget', () => {
       const dom = widget.toDOM();
       expect(dom.className).toContain('cm-codeblock-line-numbers');
       const lines = dom.querySelectorAll('.cm-codeblock-line');
-      expect(lines.length).toBe(3);
+      // 5 行 = 1 fence 开始 + 3 代码行 + 1 fence 结束
+      expect(lines.length).toBe(5);
     });
 
     it('should not render line numbers when disabled', () => {
@@ -258,10 +260,22 @@ describe('CodeBlockWidget', () => {
   });
 
   describe('ignoreEvent', () => {
-    it('should return false to allow click events', () => {
+    it('should return true for mousedown events to let widget handle them', () => {
       const widget = createCodeBlockWidget(createTestData());
+      const dom = widget.toDOM();
+      const mockEvent = new MouseEvent('mousedown', {
+        bubbles: true,
+      });
+      Object.defineProperty(mockEvent, 'target', { value: dom });
 
-      expect(widget.ignoreEvent()).toBe(false);
+      expect(widget.ignoreEvent(mockEvent)).toBe(true);
+    });
+
+    it('should return false for other events', () => {
+      const widget = createCodeBlockWidget(createTestData());
+      const mockEvent = new MouseEvent('click');
+
+      expect(widget.ignoreEvent(mockEvent)).toBe(false);
     });
   });
 
@@ -290,10 +304,16 @@ describe('CodeBlockWidget', () => {
       const dom = widget.toDOM();
       const lines = dom.querySelectorAll('.cm-codeblock-line');
 
-      expect(lines.length).toBe(3);
-      expect((lines[0] as HTMLElement).dataset.lineIndex).toBe('0');
-      expect((lines[1] as HTMLElement).dataset.lineIndex).toBe('1');
-      expect((lines[2] as HTMLElement).dataset.lineIndex).toBe('2');
+      // 5 行 = 1 fence 开始 + 3 代码行 + 1 fence 结束
+      expect(lines.length).toBe(5);
+      // fence 开始行索引为 -1
+      expect((lines[0] as HTMLElement).dataset.lineIndex).toBe('-1');
+      // 代码行索引从 0 开始
+      expect((lines[1] as HTMLElement).dataset.lineIndex).toBe('0');
+      expect((lines[2] as HTMLElement).dataset.lineIndex).toBe('1');
+      expect((lines[3] as HTMLElement).dataset.lineIndex).toBe('2');
+      // fence 结束行索引为 -2
+      expect((lines[4] as HTMLElement).dataset.lineIndex).toBe('-2');
     });
   });
 });
