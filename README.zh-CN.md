@@ -1,61 +1,55 @@
 # codemirror-live-markdown
 
-> CodeMirror 6 的实时预览模式 - 灵感来自 Obsidian
-
 [![npm version](https://img.shields.io/npm/v/codemirror-live-markdown.svg)](https://www.npmjs.com/package/codemirror-live-markdown)
 [![npm downloads](https://img.shields.io/npm/dm/codemirror-live-markdown.svg)](https://www.npmjs.com/package/codemirror-live-markdown)
+[![CI](https://github.com/blueberrycongee/codemirror-live-markdown/actions/workflows/ci.yml/badge.svg)](https://github.com/blueberrycongee/codemirror-live-markdown/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+**CodeMirror 6 的 Obsidian 风格实时预览** — 模块化插件集合，在非编辑状态下隐藏 Markdown 语法。
 
 [English](./README.md) | 简体中文
 
-**⚠️ 开发中** - 这是一个早期项目，核心功能已实现，更多功能正在开发中。
+[在线演示](https://codemirror-live-markdown.vercel.app/) · [文档](#文档) · [路线图](./ROADMAP.md)
 
-**[🚀 在线演示](https://codemirror-live-markdown.vercel.app/)** - 立即体验！
+---
 
-## 特性
+## 为什么选择这个库？
 
-- ✨ **实时预览** - 非编辑状态下隐藏 Markdown 标记符号
-- 🎯 **智能显示** - 光标进入时平滑展开标记，可直接编辑
-- 🎨 **流畅动画** - CSS 过渡动画，体验丝滑
-- 📝 **多种元素** - 支持加粗、斜体、标题、列表、引用等
-- 🧮 **数学公式** - KaTeX 渲染行内和块级数学公式（v0.2.0+）
-- 📊 **表格** - Markdown 表格实时预览（v0.3.0+）
-- 💻 **代码块** - lowlight 语法高亮（v0.4.0+）
-- ⚡ **性能优化** - 位置缓存、拖拽选择优化
-- 🔧 **TypeScript** - 完整的类型定义
+大多数 Markdown 编辑器让你二选一：要么看原始语法，要么看渲染结果。实时预览两者兼得 — 语法只在光标进入时显示，让你在看到格式化结果的同时自然地编辑。
 
-## 在线演示
+**核心优势：**
+- **模块化** — 按需导入（数学公式？表格？代码块？）
+- **零锁定** — 兼容任何 CodeMirror 6 配置
+- **轻量级** — 不强制依赖重型库
 
-**在线体验：** https://codemirror-live-markdown.vercel.app/
+## 功能特性
 
-**本地运行：**
-```bash
-cd demo
-npm install
-npm run dev
-```
-
-访问 http://localhost:5173
+| 功能 | 描述 | 版本 |
+|------|------|------|
+| ✨ 实时预览 | 非编辑时隐藏标记 | v0.1.0 |
+| 📝 行内格式 | 粗体、斜体、删除线、行内代码 | v0.1.0 |
+| 📑 块级元素 | 标题、列表、引用 | v0.1.0 |
+| 🧮 数学公式 | KaTeX 渲染（行内和块级） | v0.2.0 |
+| 📊 表格 | GFM 表格渲染 | v0.3.0 |
+| 💻 代码块 | lowlight 语法高亮 | v0.4.0 |
+| 🖼️ 图片 | 图片预览与加载状态 | v0.5.0 |
+| 🔗 链接 | 可点击的链接渲染 | v0.5.0 |
 
 ## 安装
 
 ```bash
-npm install codemirror-live-markdown@alpha
+npm install codemirror-live-markdown
 ```
 
-**需要同时安装 peer dependencies：**
+**必需的 peer dependencies：**
 ```bash
 npm install @codemirror/state @codemirror/view @codemirror/lang-markdown @codemirror/language @lezer/markdown
 ```
 
-**可选：数学公式支持（v0.2.0+）：**
+**可选依赖**（按需安装）：
 ```bash
-npm install katex
-```
-
-**可选：代码块语法高亮（v0.4.0+）：**
-```bash
-npm install lowlight
+npm install katex      # 数学公式
+npm install lowlight   # 代码语法高亮
 ```
 
 ## 快速开始
@@ -64,46 +58,34 @@ npm install lowlight
 import { EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { markdown } from '@codemirror/lang-markdown';
-import { Table } from '@lezer/markdown';
 import {
   livePreviewPlugin,
   markdownStylePlugin,
-  mathPlugin,
-  blockMathField,
-  tableField,
-  codeBlockField,
+  editorTheme,
   mouseSelectingField,
   collapseOnSelectionFacet,
-  editorTheme,
   setMouseSelecting,
 } from 'codemirror-live-markdown';
 
-const state = EditorState.create({
-  doc: '# 你好\n\n这是 **粗体** 和 *斜体* 文本。',
-  extensions: [
-    markdown({ extensions: [Table] }),
-    collapseOnSelectionFacet.of(true),
-    mouseSelectingField,
-    livePreviewPlugin,
-    markdownStylePlugin,
-    mathPlugin,       // 可选：行内数学公式支持
-    blockMathField,   // 可选：块级数学公式支持
-    tableField,       // 可选：表格支持
-    codeBlockField(), // 可选：代码块语法高亮
-    editorTheme,
-  ],
-});
-
 const view = new EditorView({
-  state,
+  state: EditorState.create({
+    doc: '# 你好世界\n\n这是 **粗体** 和 *斜体* 文本。',
+    extensions: [
+      markdown(),
+      collapseOnSelectionFacet.of(true),
+      mouseSelectingField,
+      livePreviewPlugin,
+      markdownStylePlugin,
+      editorTheme,
+    ],
+  }),
   parent: document.getElementById('editor')!,
 });
 
-// 必需：设置拖拽选择检测
+// 必需：跟踪鼠标选择状态
 view.contentDOM.addEventListener('mousedown', () => {
   view.dispatch({ effects: setMouseSelecting.of(true) });
 });
-
 document.addEventListener('mouseup', () => {
   requestAnimationFrame(() => {
     view.dispatch({ effects: setMouseSelecting.of(false) });
@@ -111,220 +93,142 @@ document.addEventListener('mouseup', () => {
 });
 ```
 
-## 工作原理
+## 文档
 
-核心是 `shouldShowSource(state, from, to)` 函数，它根据光标位置决定是否显示标记：
+### 添加可选功能
 
-```
-文档内容: "Hello **world** test"
-位置:      0     6    13   18
+每个功能都是独立插件，按需导入：
 
-场景 1: 光标在位置 5（"Hello" 后面）
-→ shouldShowSource(state, 6, 15) = false
-→ 隐藏 **, 显示粗体效果
-
-场景 2: 光标在位置 10（"world" 中间）
-→ shouldShowSource(state, 6, 15) = true
-→ 显示 **, 可以编辑
-```
-
-**动画技术：**
-- **行内标记**（加粗、斜体）：使用 `max-width: 0` → `max-width: 4ch` 过渡
-- **块级标记**（标题、列表）：使用 `fontSize: 0.01em` → `fontSize: 1em` 过渡
-
-## API
-
-### 扩展
-
-- `livePreviewPlugin` - 主实时预览插件
-- `markdownStylePlugin` - Markdown 样式（标题、粗体、斜体等）
-- `mathPlugin` - 行内数学公式渲染（需要 KaTeX）
-- `blockMathField` - 块级数学公式渲染（需要 KaTeX）
-- `tableField` - 表格渲染（需要 `@lezer/markdown` Table 扩展）
-- `codeBlockField(options?)` - 代码块语法高亮（需要 lowlight）
-- `editorTheme` - 带动画的默认主题
-
-### 状态管理
-
-- `collapseOnSelectionFacet` - 启用/禁用实时预览
-- `mouseSelectingField` - 跟踪拖拽选择状态
-- `setMouseSelecting` - 设置拖拽状态的 Effect
-
-### 工具函数
-
-- `shouldShowSource(state, from, to)` - 核心判断函数
-- `renderMath(source, displayMode)` - 使用 KaTeX 渲染数学公式
-- `clearMathCache()` - 清空数学公式渲染缓存
-- `highlightCode(code, lang?)` - 使用 lowlight 高亮代码
-- `registerLanguage(name, syntax)` - 注册额外的高亮语言
-- `isLanguageRegistered(name)` - 检查语言是否已注册
-- `initHighlighter()` - 初始化语法高亮器（异步，使用高亮前调用）
-- `isHighlighterAvailable()` - 检查高亮器是否可用
-
-## 数学公式（v0.2.0+）
-
-**行内公式：** 使用反引号-美元符号语法
-```markdown
-著名的方程 `$E = mc^2$` 表示质能等价。
-```
-
-**块级公式：** 使用 `math` 语言的代码块
-````markdown
-```math
-\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
-```
-````
-
-**使用要求：**
-1. 安装 KaTeX：`npm install katex`
-2. 在 HTML 中引入 KaTeX CSS：
-```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-```
-3. 在扩展中添加 `mathPlugin`
-
-**功能特性：**
-- 点击渲染结果进入编辑模式
-- 渲染和编辑模式之间平滑过渡
-- 无效 LaTeX 的错误处理
-- 渲染缓存提升性能
-
-## 表格（v0.3.0+）
-
-光标在表格外时，表格会渲染为 HTML：
-
-```markdown
-| 姓名  | 年龄 | 城市     |
-|-------|------|----------|
-| Alice | 25   | 北京     |
-| Bob   | 30   | 上海     |
-```
-
-**对齐支持：**
-```markdown
-| 左对齐 | 居中 | 右对齐 |
-|:-------|:----:|-------:|
-| L      |  C   |      R |
-```
-
-**使用要求：**
-1. 启用 GFM Table 扩展：
 ```typescript
-import { markdown } from '@codemirror/lang-markdown';
 import { Table } from '@lezer/markdown';
+import {
+  mathPlugin,
+  blockMathField,
+  tableField,
+  codeBlockField,
+  imageField,
+  linkPlugin,
+} from 'codemirror-live-markdown';
 
-markdown({ extensions: [Table] })
+const extensions = [
+  markdown({ extensions: [Table] }), // 在解析器中启用 GFM 表格
+  // ... 快速开始中的核心扩展
+  
+  // 可选功能：
+  mathPlugin,                        // 行内数学：`$E=mc^2$`
+  blockMathField,                    // 块级数学：```math
+  tableField,                        // GFM 表格
+  codeBlockField({ copyButton: true }), // 带语法高亮的代码块
+  imageField(),                      // 图片预览
+  linkPlugin(),                      // 链接渲染
+];
 ```
-2. 在扩展中添加 `tableField`
 
-**功能特性：**
-- 点击渲染的表格进入编辑模式
-- 渲染和编辑模式之间平滑过渡
-- 支持左对齐、居中、右对齐
-- 编辑模式下源码高亮显示
+### 代码块配置
 
-## 代码块（v0.4.0+）
-
-光标在代码块外时，代码块会渲染为语法高亮：
-
-````markdown
-```javascript
-function greet(name) {
-  console.log(`Hello, ${name}!`);
-}
-```
-````
-
-**使用要求：**
-1. 安装 lowlight：`npm install lowlight`
-2. 在扩展中添加 `codeBlockField()`
-
-**配置选项：**
 ```typescript
 codeBlockField({
-  lineNumbers: false,      // 显示行号（默认：false）
-  copyButton: true,        // 显示复制按钮（默认：true）
-  defaultLanguage: 'text', // 未指定语言时的默认语言
+  lineNumbers: false,      // 显示行号
+  copyButton: true,        // 显示复制按钮
+  defaultLanguage: 'text', // 默认语言
 })
 ```
 
-**注册额外语言：**
+### 注册额外语言
+
 ```typescript
-import { registerLanguage } from 'codemirror-live-markdown';
+import { registerLanguage, initHighlighter } from 'codemirror-live-markdown';
 import rust from 'highlight.js/lib/languages/rust';
 
+// 初始化高亮器（首次使用前必需）
+await initHighlighter();
+
+// 注册额外语言
 registerLanguage('rust', rust);
 ```
 
-**功能特性：**
-- 点击渲染的代码块进入编辑模式
-- 支持 30+ 种常用语言的语法高亮
-- 复制按钮带成功反馈
-- 可选行号显示
-- lowlight 未安装时优雅降级
+### 主题定制
 
-**支持的语言（内置）：**
-JavaScript、TypeScript、Python、Java、C、C++、C#、Go、Rust、Ruby、PHP、Swift、Kotlin、SQL、HTML、CSS、JSON、YAML、Markdown、Bash 等。
-
-## 自定义样式
-
-使用 CSS 变量自定义颜色：
+使用 CSS 变量自定义：
 
 ```css
 :root {
-  --foreground: 0 0% 0%;
-  --primary: 221 83% 53%;
-  --muted: 210 40% 96%;
-  --muted-foreground: 215 16% 47%;
-  --border: 214 32% 91%;
-  
-  /* Markdown 专用 */
-  --md-heading: var(--foreground);
-  --md-bold: var(--foreground);
-  --md-italic: var(--foreground);
-  --md-link: var(--primary);
+  --md-heading: #1a1a1a;
+  --md-bold: #1a1a1a;
+  --md-italic: #1a1a1a;
+  --md-link: #2563eb;
+  --md-code-bg: #f5f5f5;
 }
 ```
 
-## 路线图
+## API 参考
 
-查看 [ROADMAP.md](./ROADMAP.md) 了解详细的版本计划。
+### 核心扩展
 
-**即将推出：**
-- [x] v0.2.0-alpha: 数学公式（KaTeX）✅
-- [x] v0.3.0-alpha: 表格 ✅
-- [x] v0.4.0-alpha: 代码块语法高亮 ✅
-- [ ] v0.5.0-alpha: 图片和链接
-- [ ] v1.0.0: 稳定版本
+| 导出 | 描述 |
+|------|------|
+| `livePreviewPlugin` | 主实时预览行为 |
+| `markdownStylePlugin` | 标题、粗体、斜体等样式 |
+| `editorTheme` | 带动画的默认主题 |
+| `mouseSelectingField` | 跟踪拖拽选择状态 |
+| `collapseOnSelectionFacet` | 启用/禁用实时预览 |
+
+### 功能扩展
+
+| 导出 | 描述 | 依赖 |
+|------|------|------|
+| `mathPlugin` | 行内数学渲染 | `katex` |
+| `blockMathField` | 块级数学渲染 | `katex` |
+| `tableField` | 表格渲染 | `@lezer/markdown` Table |
+| `codeBlockField(options?)` | 代码块高亮 | `lowlight` |
+| `imageField(options?)` | 图片预览 | — |
+| `linkPlugin(options?)` | 链接渲染 | — |
+
+### 工具函数
+
+| 导出 | 描述 |
+|------|------|
+| `shouldShowSource(state, from, to)` | 检查范围是否应显示源码 |
+| `renderMath(source, displayMode)` | 渲染 LaTeX 为 HTML |
+| `highlightCode(code, lang?)` | 高亮代码字符串 |
+| `initHighlighter()` | 初始化语法高亮器 |
+| `isHighlighterAvailable()` | 检查高亮器是否就绪 |
 
 ## 开发
 
 ```bash
-# 安装依赖
+git clone https://github.com/blueberrycongee/codemirror-live-markdown.git
+cd codemirror-live-markdown
 npm install
+npm run dev      # 监听模式
+npm test         # 运行测试
+npm run build    # 生产构建
+```
 
-# 构建
-npm run build
-
-# 监听模式
+**运行演示：**
+```bash
+cd demo
+npm install
 npm run dev
-
-# 运行测试
-npm test
-
-# 代码检查
-npm run lint
 ```
 
 ## 贡献
 
-欢迎贡献！请查看 [GitHub Issues](https://github.com/blueberrycongee/codemirror-live-markdown/issues)。
+欢迎贡献！提交 PR 前请阅读贡献指南。
+
+1. Fork 仓库
+2. 创建功能分支 (`git checkout -b feature/amazing-feature`)
+3. 提交更改 (`git commit -m 'Add amazing feature'`)
+4. 推送分支 (`git push origin feature/amazing-feature`)
+5. 发起 Pull Request
 
 ## 许可证
 
-MIT © [blueberrycongee](https://github.com/blueberrycongee)
+[MIT](./LICENSE) © [blueberrycongee](https://github.com/blueberrycongee)
 
 ## 致谢
 
-灵感来自 [Obsidian](https://obsidian.md/) 的实时预览模式。
+- 灵感来自 [Obsidian](https://obsidian.md/) 的实时预览模式
+- 基于 [CodeMirror 6](https://codemirror.net/) 构建
+- 语法高亮由 [lowlight](https://github.com/wooorm/lowlight) 提供
+- 数学渲染由 [KaTeX](https://katex.org/) 提供
