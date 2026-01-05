@@ -158,6 +158,8 @@ Scenario 2: Cursor at position 10 (inside "world")
 - `highlightCode(code, lang?)` - Highlight code with lowlight
 - `registerLanguage(name, syntax)` - Register additional language for highlighting
 - `isLanguageRegistered(name)` - Check if a language is registered
+- `initHighlighter()` - Initialize the syntax highlighter (async, call before using highlighting)
+- `isHighlighterAvailable()` - Check if the highlighter is ready to use
 
 ## Math Formulas (v0.2.0+)
 

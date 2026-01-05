@@ -107,25 +107,27 @@ npm install codemirror-live-markdown@alpha
 **Focus:** Code blocks
 
 **Features:**
-- ✅ Syntax highlighting (highlight.js)
+- ✅ Syntax highlighting (lowlight)
 - ✅ Language detection
 - ✅ Code block widget
 - ✅ Copy button
 - ✅ Line numbers (optional)
 - ✅ Click to edit
+- ✅ Async highlighter initialization for ESM compatibility
 
 **Breaking Changes:** None
 
 ---
 
-### 🔮 v0.5.0-alpha.1
-**ETA:** 4-5 weeks  
+### 🚧 v0.5.0-alpha.1
+**Status:** In Progress  
 **Focus:** Images & Links
 
-**Planned Features:**
-- [ ] Image preview
-- [ ] Local/remote image support
-- [ ] Image info display
+**Features:**
+- ✅ Image preview
+- ✅ Local/remote image support
+- ✅ Image loading with caching
+- ✅ Link rendering
 - [ ] Wiki-style links `[[page]]`
 - [ ] Link preview on hover
 
@@ -203,9 +205,9 @@ npm install codemirror-live-markdown@alpha
 |---------|--------|----------|-----------|-----------------|
 | 0.1.x-alpha | ✅ Released | Basic | Low | Early adopters, testing |
 | 0.2.x-alpha | ✅ Released | + Math | Low | Math-heavy users |
-| 0.3.x-alpha | � Curnrent | + Tables | Low | Documentation |
-| 0.4.x-alpha | 🔵 Planned | + Code | Low | Technical writing |
-| 0.5.x-alpha | 🔵 Planned | + Images | Low | Rich content |
+| 0.3.x-alpha | ✅ Released | + Tables | Low | Documentation |
+| 0.4.x-alpha | ✅ Released | + Code | Low | Technical writing |
+| 0.5.x-alpha | 🚧 Current | + Images | Low | Rich content |
 | 0.6.x-beta | 🔵 Planned | All features | Medium | Beta testing |
 | 1.0.0 | 🔵 Planned | Complete | High | Production use |
 
@@ -228,4 +230,4 @@ Want to help? Check out:
 
 ---
 
-**Last Updated:** 2026-01-04
+**Last Updated:** 2026-01-05

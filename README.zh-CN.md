@@ -158,6 +158,8 @@ document.addEventListener('mouseup', () => {
 - `highlightCode(code, lang?)` - 使用 lowlight 高亮代码
 - `registerLanguage(name, syntax)` - 注册额外的高亮语言
 - `isLanguageRegistered(name)` - 检查语言是否已注册
+- `initHighlighter()` - 初始化语法高亮器（异步，使用高亮前调用）
+- `isHighlighterAvailable()` - 检查高亮器是否可用
 
 ## 数学公式（v0.2.0+）
 
