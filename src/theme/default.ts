@@ -209,6 +209,47 @@ export const editorTheme = EditorView.theme({
     backgroundColor: 'hsl(var(--muted, 220 14% 96%))',
     fontWeight: '600',
   },
+  '.cm-table-editor': {
+    display: 'block',
+    overflowX: 'auto',
+    cursor: 'text',
+  },
+  '.cm-table-editor table': {
+    borderCollapse: 'collapse',
+    width: '100%',
+  },
+  '.cm-table-editor th, .cm-table-editor td': {
+    border: '1px solid hsl(var(--border, 220 13% 91%))',
+    padding: '8px 12px',
+  },
+  '.cm-table-editor th': {
+    backgroundColor: 'hsl(var(--muted, 220 14% 96%))',
+    fontWeight: '600',
+  },
+  '.cm-table-cell': {
+    outline: 'none',
+    minWidth: '40px',
+  },
+  '.cm-table-toolbar': {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    marginBottom: '6px',
+  },
+  '.cm-table-source-toggle': {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    marginBottom: '6px',
+  },
+  '.cm-table-toggle': {
+    border: '1px solid hsl(var(--border, 220 13% 91%))',
+    backgroundColor: 'hsl(var(--background, 0 0% 100%))',
+    color: 'hsl(var(--foreground, 222 47% 11%))',
+    borderRadius: '6px',
+    padding: '4px 8px',
+    fontSize: '12px',
+    lineHeight: '1',
+    cursor: 'pointer',
+  },
   '.cm-table-source': {
     backgroundColor: 'rgba(59, 130, 246, 0.1)',
     // 移除特殊字体，使用编辑器默认字体

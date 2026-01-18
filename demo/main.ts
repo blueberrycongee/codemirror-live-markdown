@@ -11,6 +11,7 @@ import {
   mathPlugin,
   blockMathField,
   tableField,
+  tableEditorPlugin,
   codeBlockField,
   imageField,
   linkPlugin,
@@ -21,7 +22,33 @@ import {
 } from 'codemirror-live-markdown';
 
 // Initial document content
-const initialDoc = `# Welcome to Live Preview! 🎉
+const basicDoc = `# Basic Table Preview
+
+This editor uses the default table plugin.
+
+### Table (source on cursor)
+
+| Name  | Age | City     |
+|-------|-----|----------|
+| Alice | 25  | Beijing  |
+| Bob   | 30  | Shanghai |
+
+Click inside the table to switch to Markdown source.`;
+
+const advancedDoc = `# Advanced Table Preview
+
+This editor uses the advanced table plugin.
+
+### Table (editable cells)
+
+| Name  | Age | City     |
+|-------|-----|----------|
+| Alice | 25  | Beijing  |
+| Bob   | 30  | Shanghai |
+
+Edit cells directly in Live mode. Use the MD button to switch to source.`;
+
+const longDoc = `# Welcome to Live Preview! 🎉
 
 This is a demonstration of **Live Preview** mode for CodeMirror 6, inspired by Obsidian.
 
@@ -63,14 +90,14 @@ Click on any formula to edit it!
 
 ### Tables 📊
 
-Tables are rendered as HTML when you're not editing them:
+Tables stay in Live mode by default. Edit cells directly and use the MD button to switch to source:
 
 | Name  | Age | City     |
 |-------|-----|----------|
 | Alice | 25  | Beijing  |
 | Bob   | 30  | Shanghai |
 
-Try clicking on the table to edit it! You can also use alignment:
+Edit cells directly in the table. You can also use alignment:
 
 | Left | Center | Right |
 |:-----|:------:|------:|
@@ -180,18 +207,28 @@ The core mechanism is the \`shouldShowSource()\` function that checks if the cur
 // Compartment for dynamic mode switching
 const modeCompartment = new Compartment();
 
-// Create editor state
-const state = EditorState.create({
-  doc: initialDoc,
+function setupMouseSelecting(view: EditorView) {
+  view.contentDOM.addEventListener('mousedown', () => {
+    view.dispatch({ effects: setMouseSelecting.of(true) });
+  });
+
+  document.addEventListener('mouseup', () => {
+    requestAnimationFrame(() => {
+      view.dispatch({ effects: setMouseSelecting.of(false) });
+    });
+  });
+}
+
+const basicModeCompartment = new Compartment();
+
+const basicState = EditorState.create({
+  doc: `${basicDoc}\n\n${longDoc}`,
   extensions: [
-    // Basic extensions
     history(),
     keymap.of([...defaultKeymap, ...historyKeymap]),
     markdown({ base: markdownLanguage, extensions: [Table] }),
     EditorView.lineWrapping,
-
-    // Live Preview extensions (in a compartment for dynamic switching)
-    modeCompartment.of([
+    basicModeCompartment.of([
       collapseOnSelectionFacet.of(true),
       mouseSelectingField,
       livePreviewPlugin,
@@ -208,36 +245,45 @@ const state = EditorState.create({
         },
       }),
     ]),
-
-    // Theme
     editorTheme,
   ],
 });
 
-// Create editor view
-const view = new EditorView({
-  state,
-  parent: document.getElementById('editor')!,
+const basicView = new EditorView({
+  state: basicState,
+  parent: document.getElementById('editor-basic')!,
 });
 
-// Setup drag selection detection
-view.contentDOM.addEventListener('mousedown', () => {
-  view.dispatch({ effects: setMouseSelecting.of(true) });
+setupMouseSelecting(basicView);
+
+const advancedState = EditorState.create({
+  doc: advancedDoc,
+  extensions: [
+    history(),
+    keymap.of([...defaultKeymap, ...historyKeymap]),
+    markdown({ base: markdownLanguage, extensions: [Table] }),
+    EditorView.lineWrapping,
+    collapseOnSelectionFacet.of(true),
+    mouseSelectingField,
+    markdownStylePlugin,
+    tableEditorPlugin(),
+    editorTheme,
+  ],
 });
 
-document.addEventListener('mouseup', () => {
-  requestAnimationFrame(() => {
-    view.dispatch({ effects: setMouseSelecting.of(false) });
-  });
+const advancedView = new EditorView({
+  state: advancedState,
+  parent: document.getElementById('editor-advanced')!,
 });
 
-// Mode switching buttons
-const liveBtn = document.getElementById('liveBtn')!;
-const sourceBtn = document.getElementById('sourceBtn')!;
+setupMouseSelecting(advancedView);
 
-liveBtn.addEventListener('click', () => {
-  view.dispatch({
-    effects: modeCompartment.reconfigure([
+const basicLiveBtn = document.getElementById('basicLiveBtn')!;
+const basicSourceBtn = document.getElementById('basicSourceBtn')!;
+
+basicLiveBtn.addEventListener('click', () => {
+  basicView.dispatch({
+    effects: basicModeCompartment.reconfigure([
       collapseOnSelectionFacet.of(true),
       mouseSelectingField,
       livePreviewPlugin,
@@ -255,17 +301,17 @@ liveBtn.addEventListener('click', () => {
       }),
     ]),
   });
-  liveBtn.classList.add('active');
-  sourceBtn.classList.remove('active');
+  basicLiveBtn.classList.add('active');
+  basicSourceBtn.classList.remove('active');
 });
 
-sourceBtn.addEventListener('click', () => {
-  view.dispatch({
-    effects: modeCompartment.reconfigure([
+basicSourceBtn.addEventListener('click', () => {
+  basicView.dispatch({
+    effects: basicModeCompartment.reconfigure([
       collapseOnSelectionFacet.of(false),
       markdownStylePlugin,
     ]),
   });
-  sourceBtn.classList.add('active');
-  liveBtn.classList.remove('active');
+  basicSourceBtn.classList.add('active');
+  basicLiveBtn.classList.remove('active');
 });

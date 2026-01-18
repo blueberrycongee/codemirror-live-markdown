@@ -18,6 +18,7 @@ export { livePreviewPlugin } from './plugins/livePreview';
 export { markdownStylePlugin } from './plugins/markdownStyle';
 export { mathPlugin, blockMathField } from './plugins/math';
 export { tableField } from './plugins/table';
+export { tableEditorPlugin, tableEditorField, setTableSourceMode } from './plugins/tableEditor';
 export { codeBlockField } from './plugins/codeBlock';
 export type { CodeBlockOptions } from './plugins/codeBlock';
 export { imageField } from './plugins/image';

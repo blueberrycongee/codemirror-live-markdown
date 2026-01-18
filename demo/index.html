@@ -86,13 +86,32 @@
       border-color: hsl(var(--primary));
     }
 
-    #editor {
+    .editor {
       border: 1px solid #ddd;
       border-radius: 8px;
       background: white;
       min-height: 600px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       overflow: hidden;
+    }
+
+    .demo-section {
+      margin-bottom: 30px;
+    }
+
+    .section-header {
+      margin-bottom: 16px;
+    }
+
+    .section-header h2 {
+      font-size: 1.4rem;
+      color: #1a1a1a;
+      margin-bottom: 6px;
+    }
+
+    .section-header p {
+      color: #666;
+      font-size: 0.95rem;
     }
 
     .info {
@@ -118,16 +137,29 @@
       <p class="subtitle">Live Preview Demo - Move your cursor into formatted text to see the magic ✨</p>
     </header>
 
-    <div class="controls">
-      <button id="liveBtn" class="active">Live Preview</button>
-      <button id="sourceBtn">Source Mode</button>
-    </div>
+    <section class="demo-section">
+      <div class="section-header">
+        <h2>Basic Table (Default Plugin)</h2>
+        <p>Click into the table to edit Markdown source.</p>
+      </div>
+      <div class="controls">
+        <button id="basicLiveBtn" class="active">Live Preview</button>
+        <button id="basicSourceBtn">Source Mode</button>
+      </div>
+      <div id="editor-basic" class="editor"></div>
+    </section>
 
-    <div id="editor"></div>
+    <section class="demo-section">
+      <div class="section-header">
+        <h2>Advanced Table (Editable Cells)</h2>
+        <p>Edit headers and cells directly, use the MD button to switch to source.</p>
+      </div>
+      <div id="editor-advanced" class="editor"></div>
+    </section>
 
     <div class="info">
       <strong>💡 Try this:</strong>
-      Move your cursor into the bold or italic text above. Watch the markers smoothly appear!
+      Use the advanced table to edit cells directly without switching to Markdown.
     </div>
   </div>
 
