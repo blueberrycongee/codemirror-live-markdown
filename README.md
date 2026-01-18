@@ -31,6 +31,7 @@ Most Markdown editors force you to choose: either see raw syntax or rendered out
 | 📑 Block Elements | Headers, lists, blockquotes | v0.1.0 |
 | 🧮 Math | KaTeX rendering (inline & block) | v0.2.0 |
 | 📊 Tables | GFM table rendering | v0.3.0 |
+| 🧩 Editable Tables | Inline editable tables with source toggle | v0.5.1 |
 | 💻 Code Blocks | Syntax highlighting via lowlight | v0.4.0 |
 | 🖼️ Images | Image preview with loading states | v0.5.0 |
 | 🔗 Links | Clickable link rendering | v0.5.0 |
@@ -105,6 +106,7 @@ import {
   mathPlugin,
   blockMathField,
   tableField,
+  tableEditorPlugin,
   codeBlockField,
   imageField,
   linkPlugin,
@@ -118,6 +120,7 @@ const extensions = [
   mathPlugin,                        // Inline math: `$E=mc^2$`
   blockMathField,                    // Block math: ```math
   tableField,                        // GFM tables
+  tableEditorPlugin(),               // Editable tables with source toggle
   codeBlockField({ copyButton: true }), // Code blocks with syntax highlighting
   imageField(),                      // Image preview
   linkPlugin(),                      // Link rendering
@@ -180,6 +183,7 @@ Customize with CSS variables:
 | `mathPlugin` | Inline math rendering | `katex` |
 | `blockMathField` | Block math rendering | `katex` |
 | `tableField` | Table rendering | `@lezer/markdown` Table |
+| `tableEditorPlugin()` | Editable table rendering | `@lezer/markdown` Table |
 | `codeBlockField(options?)` | Code block highlighting | `lowlight` |
 | `imageField(options?)` | Image preview | — |
 | `linkPlugin(options?)` | Link rendering | — |

@@ -31,6 +31,7 @@
 | 📑 块级元素 | 标题、列表、引用 | v0.1.0 |
 | 🧮 数学公式 | KaTeX 渲染（行内和块级） | v0.2.0 |
 | 📊 表格 | GFM 表格渲染 | v0.3.0 |
+| 🧩 可编辑表格 | 表格内直接编辑并支持源码切换 | v0.5.1 |
 | 💻 代码块 | lowlight 语法高亮 | v0.4.0 |
 | 🖼️ 图片 | 图片预览与加载状态 | v0.5.0 |
 | 🔗 链接 | 可点击的链接渲染 | v0.5.0 |
@@ -105,6 +106,7 @@ import {
   mathPlugin,
   blockMathField,
   tableField,
+  tableEditorPlugin,
   codeBlockField,
   imageField,
   linkPlugin,
@@ -118,6 +120,7 @@ const extensions = [
   mathPlugin,                        // 行内数学：`$E=mc^2$`
   blockMathField,                    // 块级数学：```math
   tableField,                        // GFM 表格
+  tableEditorPlugin(),               // 可编辑表格（带源码切换）
   codeBlockField({ copyButton: true }), // 带语法高亮的代码块
   imageField(),                      // 图片预览
   linkPlugin(),                      // 链接渲染
@@ -180,6 +183,7 @@ registerLanguage('rust', rust);
 | `mathPlugin` | 行内数学渲染 | `katex` |
 | `blockMathField` | 块级数学渲染 | `katex` |
 | `tableField` | 表格渲染 | `@lezer/markdown` Table |
+| `tableEditorPlugin()` | 可编辑表格渲染 | `@lezer/markdown` Table |
 | `codeBlockField(options?)` | 代码块高亮 | `lowlight` |
 | `imageField(options?)` | 图片预览 | — |
 | `linkPlugin(options?)` | 链接渲染 | — |
