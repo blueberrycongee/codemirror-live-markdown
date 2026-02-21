@@ -19,6 +19,7 @@
     "LICENSE"
   ],
   "scripts": {
+    "prepare": "tsup",
     "dev": "tsup --watch",
     "build": "tsup",
     "test": "vitest run",
