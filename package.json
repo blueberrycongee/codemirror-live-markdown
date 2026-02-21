@@ -1,6 +1,6 @@
 {
   "name": "codemirror-live-markdown",
-  "version": "0.5.1-alpha.1",
+  "version": "0.5.2-alpha.1",
   "description": "Live Preview mode for CodeMirror 6 - inspired by Obsidian",
   "type": "module",
   "main": "./dist/index.cjs",
