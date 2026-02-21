@@ -25,7 +25,7 @@ export function renderInlineMarkdown(text: string): string {
   result = result.replace(/`([^`]+)`/g, (_match, code) => {
     const idx = codeBlocks.length;
     codeBlocks.push(`<code class="cm-code">${code}</code>`);
-    return `\x00CODE${idx}\x00`;
+    return `%%CODE${idx}%%`;
   });
 
   // Bold: **text** or __text__
@@ -43,7 +43,7 @@ export function renderInlineMarkdown(text: string): string {
   result = result.replace(/==(.+?)==/g, '<mark class="cm-highlight">$1</mark>');
 
   // Restore code blocks
-  result = result.replace(/\x00CODE(\d+)\x00/g, (_match, idx) => codeBlocks[Number(idx)]);
+  result = result.replace(/%%CODE(\d+)%%/g, (_match, idx) => codeBlocks[Number(idx)]);
 
   return result;
 }
