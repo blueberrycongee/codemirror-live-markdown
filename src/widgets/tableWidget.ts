@@ -6,6 +6,7 @@
 
 import { WidgetType } from '@codemirror/view';
 import { TableData } from '../utils/tableParser';
+import { renderInlineMarkdown } from '../utils/inlineMarkdown';
 
 /**
  * Table Widget class
@@ -53,7 +54,7 @@ export class TableWidget extends WidgetType {
 
     this.data.headers.forEach((header, idx) => {
       const th = document.createElement('th');
-      th.textContent = header;
+      th.innerHTML = renderInlineMarkdown(header);
       if (this.data.alignments[idx]) {
         th.style.textAlign = this.data.alignments[idx]!;
       }
@@ -71,7 +72,7 @@ export class TableWidget extends WidgetType {
 
       row.forEach((cell, idx) => {
         const td = document.createElement('td');
-        td.textContent = cell;
+        td.innerHTML = renderInlineMarkdown(cell);
         if (this.data.alignments[idx]) {
           td.style.textAlign = this.data.alignments[idx]!;
         }

@@ -6,6 +6,7 @@ import { EditorView, WidgetType } from '@codemirror/view';
 import { TableData } from '../utils/tableParser';
 import { serializeMarkdownTable } from '../utils/tableSerializer';
 import { setTableSourceMode } from '../plugins/tableEditorEffects';
+import { renderInlineMarkdown } from '../utils/inlineMarkdown';
 
 function cloneTableData(data: TableData): TableData {
   return {
@@ -24,17 +25,31 @@ function createEditableCell(
   cell.className = 'cm-table-cell';
   cell.contentEditable = 'true';
   cell.spellcheck = false;
-  cell.textContent = value;
+  cell.dataset.raw = value;
+  cell.innerHTML = renderInlineMarkdown(value);
+
+  let editing = false;
 
   const commitIfChanged = () => {
     const nextValue = cell.textContent ?? '';
-    if (nextValue === value) return;
+    const raw = cell.dataset.raw ?? '';
+    if (nextValue === raw) return;
+    cell.dataset.raw = nextValue;
     onCommit(nextValue);
   };
+
+  cell.addEventListener('focus', () => {
+    if (!editing) {
+      editing = true;
+      cell.textContent = cell.dataset.raw ?? '';
+    }
+  });
 
   cell.addEventListener('blur', (event) => {
     event.stopPropagation();
     commitIfChanged();
+    editing = false;
+    cell.innerHTML = renderInlineMarkdown(cell.dataset.raw ?? '');
   });
 
   cell.addEventListener('keydown', (event) => {

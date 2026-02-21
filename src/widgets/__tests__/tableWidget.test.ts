@@ -108,8 +108,28 @@ describe('TableWidget', () => {
     const dom = widget.toDOM();
 
     const cell = dom.querySelector('td');
-    // Should be text content, not HTML
+    // HTML should be escaped — no raw script tags
     expect(cell?.textContent).toBe('<script>alert(1)</script>');
     expect(cell?.innerHTML).not.toContain('<script>');
+  });
+
+  it('should render inline markdown in cells', () => {
+    const data: TableData = {
+      headers: ['**Bold Header**'],
+      alignments: [null],
+      rows: [['*italic*'], ['~~strike~~'], ['==highlight=='], ['`code`']],
+    };
+
+    const widget = new TableWidget(data);
+    const dom = widget.toDOM();
+
+    const th = dom.querySelector('th');
+    expect(th?.innerHTML).toContain('<strong class="cm-strong">Bold Header</strong>');
+
+    const cells = dom.querySelectorAll('td');
+    expect(cells[0].innerHTML).toContain('<em class="cm-emphasis">italic</em>');
+    expect(cells[1].innerHTML).toContain('<del class="cm-strikethrough">strike</del>');
+    expect(cells[2].innerHTML).toContain('<mark class="cm-highlight">highlight</mark>');
+    expect(cells[3].innerHTML).toContain('<code class="cm-code">code</code>');
   });
 });
