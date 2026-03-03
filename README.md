@@ -134,8 +134,12 @@ codeBlockField({
   lineNumbers: false,      // Show line numbers
   copyButton: true,        // Show copy button
   defaultLanguage: 'text', // Fallback language
+  interaction: 'auto',     // 'auto' | 'toggle'
 })
 ```
+
+- `interaction: 'auto'` (default): enter source mode when cursor enters code block.
+- `interaction: 'toggle'`: keep rendered mode by default and switch with `MD` / `Code` buttons.
 
 ### Registering Additional Languages
 
@@ -185,6 +189,7 @@ Customize with CSS variables:
 | `tableField` | Table rendering | `@lezer/markdown` Table |
 | `tableEditorPlugin()` | Editable table rendering | `@lezer/markdown` Table |
 | `codeBlockField(options?)` | Code block highlighting | `lowlight` |
+| `setCodeBlockSourceMode` | Toggle code block source mode via effect | — |
 | `imageField(options?)` | Image preview | — |
 | `linkPlugin(options?)` | Link rendering | — |
 

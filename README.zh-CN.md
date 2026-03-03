@@ -134,8 +134,12 @@ codeBlockField({
   lineNumbers: false,      // 显示行号
   copyButton: true,        // 显示复制按钮
   defaultLanguage: 'text', // 默认语言
+  interaction: 'auto',     // 'auto' | 'toggle'
 })
 ```
+
+- `interaction: 'auto'`（默认）：光标进入代码块时自动切回源码模式。  
+- `interaction: 'toggle'`：默认保持渲染态，通过 `MD` / `Code` 按钮切换。
 
 ### 注册额外语言
 
@@ -185,6 +189,7 @@ registerLanguage('rust', rust);
 | `tableField` | 表格渲染 | `@lezer/markdown` Table |
 | `tableEditorPlugin()` | 可编辑表格渲染 | `@lezer/markdown` Table |
 | `codeBlockField(options?)` | 代码块高亮 | `lowlight` |
+| `setCodeBlockSourceMode` | 通过 effect 切换代码块源码模式 | — |
 | `imageField(options?)` | 图片预览 | — |
 | `linkPlugin(options?)` | 链接渲染 | — |
 
