@@ -5,8 +5,9 @@
  * Supports precise click position mapping
  */
 
-import { WidgetType } from '@codemirror/view';
+import { EditorView, WidgetType } from '@codemirror/view';
 import { highlightCode } from '../utils/codeHighlight';
+import { setCodeBlockSourceMode } from '../plugins/codeBlockEffects';
 
 /**
  * Code block data interface
@@ -49,6 +50,7 @@ export class CodeBlockWidget extends WidgetType {
       other.data.language === this.data.language &&
       other.data.showLineNumbers === this.data.showLineNumbers &&
       other.data.showCopyButton === this.data.showCopyButton &&
+      other.data.showSourceToggle === this.data.showSourceToggle &&
       other.data.from === this.data.from
     );
   }
@@ -56,7 +58,7 @@ export class CodeBlockWidget extends WidgetType {
   /**
    * Render to DOM element
    */
-  toDOM(): HTMLElement {
+  toDOM(view?: EditorView): HTMLElement {
     const {
       code,
       language,
@@ -79,60 +81,62 @@ export class CodeBlockWidget extends WidgetType {
       container.className += ' cm-codeblock-line-numbers';
     }
 
-    // Add click handler - handle in capture phase, stop propagation
-    container.addEventListener(
-      'mousedown',
-      (event) => {
-        const target = event.target as HTMLElement;
+    const enableClickToEdit = !showSourceToggle;
 
-        // Don't handle toolbar buttons
-        if (target.closest('.cm-codeblock-copy, .cm-codeblock-toggle')) {
-          return;
-        }
+    // Auto mode: click rendered block to jump to source position.
+    if (enableClickToEdit && view) {
+      container.addEventListener(
+        'mousedown',
+        (event) => {
+          const target = event.target as HTMLElement;
 
-        // Stop propagation to prevent CodeMirror from handling
-        event.stopPropagation();
-        event.preventDefault();
-
-        // Find clicked line
-        const lineEl = target.closest('.cm-codeblock-line');
-        let targetPos = widgetData.from;
-
-        if (lineEl) {
-          const lineIndex = parseInt(
-            (lineEl as HTMLElement).dataset.lineIndex || '0',
-            10
-          );
-
-          if (lineIndex === -1) {
-            // Clicked on start fence line
-            targetPos = widgetData.from;
-          } else if (lineIndex === -2) {
-            // Clicked on end fence line
-            targetPos = widgetData.to;
-          } else if (lineIndex >= 0 && lineIndex < widgetData.lineStarts.length) {
-            targetPos = widgetData.lineStarts[lineIndex];
-
-            // Calculate column position using precise measurement
-            const charOffset = this.measureClickOffset(
-              lineEl as HTMLElement,
-              event.clientX,
-              widgetData.code.split('\n')[lineIndex] || ''
-            );
-            targetPos += charOffset;
+          // Don't handle toolbar buttons
+          if (target.closest('.cm-codeblock-copy, .cm-codeblock-toggle')) {
+            return;
           }
-        }
 
-        // Dispatch custom event for codeBlock.ts handler to set cursor
-        container.dispatchEvent(
-          new CustomEvent('codeblock-click', {
-            bubbles: true,
-            detail: { targetPos },
-          })
-        );
-      },
-      true // Capture phase
-    );
+          event.stopPropagation();
+          event.preventDefault();
+
+          // Find clicked line
+          const lineEl = target.closest('.cm-codeblock-line');
+          let targetPos = widgetData.from;
+
+          if (lineEl) {
+            const lineIndex = parseInt(
+              (lineEl as HTMLElement).dataset.lineIndex || '0',
+              10
+            );
+
+            if (lineIndex === -1) {
+              targetPos = widgetData.from;
+            } else if (lineIndex === -2) {
+              targetPos = widgetData.to;
+            } else if (
+              lineIndex >= 0 &&
+              lineIndex < widgetData.lineStarts.length
+            ) {
+              targetPos = widgetData.lineStarts[lineIndex];
+
+              // Calculate column position using precise measurement
+              const charOffset = this.measureClickOffset(
+                lineEl as HTMLElement,
+                event.clientX,
+                widgetData.code.split('\n')[lineIndex] || ''
+              );
+              targetPos += charOffset;
+            }
+          }
+
+          view.dispatch({
+            selection: { anchor: targetPos },
+            scrollIntoView: true,
+          });
+          view.focus();
+        },
+        true
+      );
+    }
 
     const toolbar = document.createElement('div');
     toolbar.className = 'cm-codeblock-actions';
@@ -146,16 +150,17 @@ export class CodeBlockWidget extends WidgetType {
       toggleBtn.addEventListener('click', (event) => {
         event.preventDefault();
         event.stopPropagation();
-        container.dispatchEvent(
-          new CustomEvent('codeblock-toggle-source', {
-            bubbles: true,
-            detail: {
-              from: widgetData.from,
-              to: widgetData.to,
-              showSource: true,
-            },
-          })
-        );
+        if (!view) return;
+        view.dispatch({
+          selection: { anchor: widgetData.from },
+          effects: setCodeBlockSourceMode.of({
+            from: widgetData.from,
+            to: widgetData.to,
+            showSource: true,
+          }),
+          scrollIntoView: true,
+        });
+        view.focus();
       });
       toolbar.appendChild(toggleBtn);
     }
@@ -343,13 +348,20 @@ export class CodeBlockWidget extends WidgetType {
    * We handle clicks ourselves in codeBlock.ts with domEventHandlers
    */
   ignoreEvent(event: Event): boolean {
-    // Don't ignore copy button clicks, let it handle itself
     if (event.type === 'mousedown') {
       const target = event.target as HTMLElement;
-      if (target.closest('.cm-codeblock-copy')) {
-        return true; // Ignore, let copy button handle it
+
+      // Toggle mode: allow selecting code text directly.
+      if (this.data.showSourceToggle) {
+        if (target.closest('.cm-codeblock-copy, .cm-codeblock-toggle')) {
+          return true;
+        }
+        return false;
       }
-      // Ignore other mousedown events to prevent CodeMirror from handling first
+
+      if (target.closest('.cm-codeblock-copy')) {
+        return true;
+      }
       return true;
     }
     return false;
@@ -371,7 +383,7 @@ export class CodeBlockSourceToggleWidget extends WidgetType {
     super();
   }
 
-  toDOM(): HTMLElement {
+  toDOM(view?: EditorView): HTMLElement {
     const container = document.createElement('div');
     container.className = 'cm-codeblock-source-toggle';
 
@@ -383,16 +395,16 @@ export class CodeBlockSourceToggleWidget extends WidgetType {
     button.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
-      container.dispatchEvent(
-        new CustomEvent('codeblock-toggle-source', {
-          bubbles: true,
-          detail: {
-            from: this.from,
-            to: this.to,
-            showSource: false,
-          },
-        })
-      );
+      if (!view) return;
+      view.dispatch({
+        effects: setCodeBlockSourceMode.of({
+          from: this.from,
+          to: this.to,
+          showSource: false,
+        }),
+        scrollIntoView: true,
+      });
+      view.focus();
     });
 
     container.appendChild(button);

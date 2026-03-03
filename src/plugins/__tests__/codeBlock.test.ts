@@ -228,6 +228,31 @@ describe('codeBlockField', () => {
 
       cleanup(view);
     });
+
+    it('should switch back to widget mode when Code button is clicked', () => {
+      const doc = '```javascript\nconst x = 1;\n```';
+      view = createEditor(doc, 0, { interaction: 'toggle' });
+
+      const mdButton = view.dom.querySelector(
+        '.cm-codeblock-toggle'
+      ) as HTMLButtonElement | null;
+      expect(mdButton).not.toBeNull();
+      mdButton?.click();
+
+      const codeButton = view.dom.querySelector(
+        '.cm-codeblock-source-toggle .cm-codeblock-toggle'
+      ) as HTMLButtonElement | null;
+      expect(codeButton).not.toBeNull();
+      codeButton?.click();
+
+      const widget = view.dom.querySelector('.cm-codeblock-widget');
+      const sourceLine = view.dom.querySelector('.cm-codeblock-source');
+
+      expect(widget).not.toBeNull();
+      expect(sourceLine).toBeNull();
+
+      cleanup(view);
+    });
   });
 
   describe('updates', () => {

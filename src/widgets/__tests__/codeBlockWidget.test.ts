@@ -329,4 +329,32 @@ describe('CodeBlockWidget', () => {
       expect((lines[4] as HTMLElement).dataset.lineIndex).toBe('-2');
     });
   });
+
+  describe('interaction behavior', () => {
+    it('should allow text selection mousedown in toggle mode', () => {
+      const widget = createCodeBlockWidget(
+        createTestData({
+          code: 'line1\nline2',
+          lineStarts: [14, 20],
+          showSourceToggle: true,
+        })
+      );
+
+      const dom = widget.toDOM();
+      const line = dom.querySelector(
+        '.cm-codeblock-line[data-line-index="0"]'
+      ) as HTMLElement | null;
+
+      expect(line).not.toBeNull();
+      if (!line) return;
+
+      const event = new MouseEvent('mousedown', {
+        bubbles: true,
+        cancelable: true,
+      });
+      line.dispatchEvent(event);
+
+      expect(event.defaultPrevented).toBe(false);
+    });
+  });
 });

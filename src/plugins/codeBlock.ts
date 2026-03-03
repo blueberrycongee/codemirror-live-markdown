@@ -201,43 +201,6 @@ function buildCodeBlockDecorations(
 }
 
 /**
- * Create code block click handler
- */
-function createCodeBlockClickHandler() {
-  return EditorView.domEventHandlers({
-    // Listen for custom event (from widget)
-    'codeblock-click': (event: Event, view) => {
-      const customEvent = event as CustomEvent<{ targetPos: number }>;
-      const targetPos = customEvent.detail.targetPos;
-
-      // Set cursor position
-      view.dispatch({
-        selection: { anchor: targetPos },
-        scrollIntoView: true,
-      });
-
-      // Focus editor
-      view.focus();
-
-      return true;
-    },
-    'codeblock-toggle-source': (event: Event, view) => {
-      const customEvent = event as CustomEvent<CodeBlockSourceModeToggle>;
-      const payload = customEvent.detail;
-
-      view.dispatch({
-        selection: payload.showSource ? { anchor: payload.from } : undefined,
-        effects: setCodeBlockSourceMode.of(payload),
-        scrollIntoView: true,
-      });
-
-      view.focus();
-      return true;
-    },
-  });
-}
-
-/**
  * Create code block StateField
  */
 function createCodeBlockField(
@@ -317,9 +280,8 @@ export function codeBlockField(options?: CodeBlockOptions) {
   const mergedOptions = { ...defaultOptions, ...options };
 
   const field = createCodeBlockField(mergedOptions);
-  const clickHandler = createCodeBlockClickHandler();
 
-  return [codeBlockSourceModeField, field, clickHandler];
+  return [codeBlockSourceModeField, field];
 }
 
 export { setCodeBlockSourceMode };
