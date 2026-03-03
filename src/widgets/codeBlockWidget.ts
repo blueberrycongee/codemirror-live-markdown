@@ -178,7 +178,10 @@ export class CodeBlockWidget extends WidgetType {
         e.stopPropagation();
 
         try {
-          await navigator.clipboard.writeText(code);
+          const copied = await this.copyText(code);
+          if (!copied) {
+            throw new Error('Copy failed');
+          }
           copyBtn.textContent = 'Copied!';
           copyBtn.classList.add('cm-codeblock-copy-success');
 
@@ -341,6 +344,63 @@ export class CodeBlockWidget extends WidgetType {
     return Math.min(left, sourceText.length);
   }
 
+  private async copyText(text: string): Promise<boolean> {
+    const clipboard = navigator.clipboard;
+
+    if (clipboard?.writeText) {
+      try {
+        await clipboard.writeText(text);
+        return true;
+      } catch {
+        // Fall back to execCommand in environments without clipboard permission.
+      }
+    }
+
+    return this.fallbackCopyWithExecCommand(text);
+  }
+
+  private fallbackCopyWithExecCommand(text: string): boolean {
+    if (typeof document.execCommand !== 'function') {
+      return false;
+    }
+
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', 'true');
+    textarea.style.position = 'fixed';
+    textarea.style.top = '-9999px';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+
+    const selection = document.getSelection();
+    const previousRanges: Range[] = [];
+    if (selection) {
+      for (let i = 0; i < selection.rangeCount; i++) {
+        previousRanges.push(selection.getRangeAt(i));
+      }
+    }
+
+    textarea.focus();
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
+
+    let copied = false;
+    try {
+      copied = document.execCommand('copy');
+    } catch {
+      copied = false;
+    }
+
+    document.body.removeChild(textarea);
+
+    if (selection) {
+      selection.removeAllRanges();
+      previousRanges.forEach((range) => selection.addRange(range));
+    }
+
+    return copied;
+  }
+
   /**
    * Whether to ignore events
    *
@@ -348,13 +408,22 @@ export class CodeBlockWidget extends WidgetType {
    * We handle clicks ourselves in codeBlock.ts with domEventHandlers
    */
   ignoreEvent(event: Event): boolean {
-    if (event.type === 'mousedown') {
-      const target = event.target as HTMLElement | null;
-
-      // Toggle mode: allow selecting code text directly.
-      if (this.data.showSourceToggle) {
+    if (this.data.showSourceToggle) {
+      const mouseEvents = new Set([
+        'mousedown',
+        'mouseup',
+        'mousemove',
+        'click',
+        'dblclick',
+        'contextmenu',
+      ]);
+      if (mouseEvents.has(event.type)) {
         return true;
       }
+    }
+
+    if (event.type === 'mousedown') {
+      const target = event.target as HTMLElement | null;
 
       if (target?.closest('.cm-codeblock-copy')) {
         return true;

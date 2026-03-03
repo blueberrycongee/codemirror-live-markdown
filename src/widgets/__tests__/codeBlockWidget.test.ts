@@ -202,6 +202,46 @@ describe('CodeBlockWidget', () => {
         expect(copyBtn.textContent).toBe('Failed');
       });
     });
+
+    it('should fallback to execCommand when clipboard API is unavailable', async () => {
+      const originalClipboard = (navigator as { clipboard?: unknown }).clipboard;
+      const originalExecCommand = (document as Document & { execCommand?: (cmd: string) => boolean }).execCommand;
+
+      (navigator as { clipboard?: unknown }).clipboard = undefined;
+      (document as Document & { execCommand?: (cmd: string) => boolean }).execCommand = vi
+        .fn()
+        .mockReturnValue(true);
+
+      try {
+        const widget = createCodeBlockWidget(
+          createTestData({
+            code: 'fallback-copy',
+            language: 'text',
+            showCopyButton: true,
+          })
+        );
+
+        const dom = widget.toDOM();
+        const copyBtn = dom.querySelector(
+          '.cm-codeblock-copy'
+        ) as HTMLButtonElement;
+
+        copyBtn.click();
+
+        await vi.waitFor(() => {
+          expect(copyBtn.textContent).toBe('Copied!');
+        });
+
+        expect(
+          (document as Document & { execCommand?: (cmd: string) => boolean })
+            .execCommand
+        ).toHaveBeenCalledWith('copy');
+      } finally {
+        (navigator as { clipboard?: unknown }).clipboard = originalClipboard;
+        (document as Document & { execCommand?: (cmd: string) => boolean }).execCommand =
+          originalExecCommand;
+      }
+    });
   });
 
   describe('equality', () => {
@@ -364,6 +404,32 @@ describe('CodeBlockWidget', () => {
         })
       );
       const event = new MouseEvent('mousedown');
+      const target = document.createElement('span');
+      Object.defineProperty(event, 'target', { value: target });
+
+      expect(widget.ignoreEvent(event)).toBe(true);
+    });
+
+    it('should ignore mouseup in toggle mode to keep native selection highlight', () => {
+      const widget = createCodeBlockWidget(
+        createTestData({
+          showSourceToggle: true,
+        })
+      );
+      const event = new MouseEvent('mouseup');
+      const target = document.createElement('span');
+      Object.defineProperty(event, 'target', { value: target });
+
+      expect(widget.ignoreEvent(event)).toBe(true);
+    });
+
+    it('should ignore click in toggle mode to keep native selection highlight', () => {
+      const widget = createCodeBlockWidget(
+        createTestData({
+          showSourceToggle: true,
+        })
+      );
+      const event = new MouseEvent('click');
       const target = document.createElement('span');
       Object.defineProperty(event, 'target', { value: target });
 
