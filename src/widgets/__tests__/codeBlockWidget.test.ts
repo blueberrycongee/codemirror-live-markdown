@@ -466,5 +466,67 @@ describe('CodeBlockWidget', () => {
 
       expect(onParentMouseDown).not.toHaveBeenCalled();
     });
+
+    it('should stop mouseup bubbling from code lines in toggle mode', () => {
+      const widget = createCodeBlockWidget(
+        createTestData({
+          code: 'line1\nline2',
+          lineStarts: [14, 20],
+          showSourceToggle: true,
+        })
+      );
+      const wrapper = document.createElement('div');
+      const onParentMouseUp = vi.fn();
+      wrapper.addEventListener('mouseup', onParentMouseUp);
+
+      const dom = widget.toDOM();
+      wrapper.appendChild(dom);
+
+      const line = dom.querySelector(
+        '.cm-codeblock-line[data-line-index="0"]'
+      ) as HTMLElement | null;
+      expect(line).not.toBeNull();
+      if (!line) return;
+
+      line.dispatchEvent(
+        new MouseEvent('mouseup', {
+          bubbles: true,
+          cancelable: true,
+        })
+      );
+
+      expect(onParentMouseUp).not.toHaveBeenCalled();
+    });
+
+    it('should stop click bubbling from code lines in toggle mode', () => {
+      const widget = createCodeBlockWidget(
+        createTestData({
+          code: 'line1\nline2',
+          lineStarts: [14, 20],
+          showSourceToggle: true,
+        })
+      );
+      const wrapper = document.createElement('div');
+      const onParentClick = vi.fn();
+      wrapper.addEventListener('click', onParentClick);
+
+      const dom = widget.toDOM();
+      wrapper.appendChild(dom);
+
+      const line = dom.querySelector(
+        '.cm-codeblock-line[data-line-index="0"]'
+      ) as HTMLElement | null;
+      expect(line).not.toBeNull();
+      if (!line) return;
+
+      line.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+        })
+      );
+
+      expect(onParentClick).not.toHaveBeenCalled();
+    });
   });
 });

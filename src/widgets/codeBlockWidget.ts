@@ -82,19 +82,19 @@ export class CodeBlockWidget extends WidgetType {
     }
 
     if (showSourceToggle) {
-      container.addEventListener(
-        'mousedown',
-        (event) => {
-          const target = event.target as HTMLElement | null;
-          if (target?.closest('.cm-codeblock-copy, .cm-codeblock-toggle')) {
-            return;
-          }
-          // Prevent editor-level drag state handlers from firing while
-          // keeping native text selection intact.
-          event.stopPropagation();
-        },
-        true
-      );
+      const stopBubbleForBody = (event: Event) => {
+        const target = event.target as HTMLElement | null;
+        if (target?.closest('.cm-codeblock-copy, .cm-codeblock-toggle')) {
+          return;
+        }
+        // Prevent editor-level pointer handlers from firing while
+        // keeping native text selection intact.
+        event.stopPropagation();
+      };
+
+      container.addEventListener('mousedown', stopBubbleForBody, true);
+      container.addEventListener('mouseup', stopBubbleForBody, true);
+      container.addEventListener('click', stopBubbleForBody, true);
     }
 
     const enableClickToEdit = !showSourceToggle;
