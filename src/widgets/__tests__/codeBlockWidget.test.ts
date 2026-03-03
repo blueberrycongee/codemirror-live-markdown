@@ -356,5 +356,18 @@ describe('CodeBlockWidget', () => {
 
       expect(event.defaultPrevented).toBe(false);
     });
+
+    it('should ignore mousedown in toggle mode to allow native text selection', () => {
+      const widget = createCodeBlockWidget(
+        createTestData({
+          showSourceToggle: true,
+        })
+      );
+      const event = new MouseEvent('mousedown');
+      const target = document.createElement('span');
+      Object.defineProperty(event, 'target', { value: target });
+
+      expect(widget.ignoreEvent(event)).toBe(true);
+    });
   });
 });

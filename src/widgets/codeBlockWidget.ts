@@ -349,17 +349,14 @@ export class CodeBlockWidget extends WidgetType {
    */
   ignoreEvent(event: Event): boolean {
     if (event.type === 'mousedown') {
-      const target = event.target as HTMLElement;
+      const target = event.target as HTMLElement | null;
 
       // Toggle mode: allow selecting code text directly.
       if (this.data.showSourceToggle) {
-        if (target.closest('.cm-codeblock-copy, .cm-codeblock-toggle')) {
-          return true;
-        }
-        return false;
+        return true;
       }
 
-      if (target.closest('.cm-codeblock-copy')) {
+      if (target?.closest('.cm-codeblock-copy')) {
         return true;
       }
       return true;
