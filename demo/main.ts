@@ -161,7 +161,7 @@ interface User {
 const user: User = { name: 'Alice', age: 25 };
 \`\`\`
 
-Click on any code block to edit it!
+Use the MD button on any code block to switch to source editing.
 
 ### Images 🖼️
 
@@ -262,7 +262,7 @@ const basicState = EditorState.create({
       mathPlugin,
       blockMathField,
       tableField,
-      codeBlockField(),
+      codeBlockField({ interaction: 'toggle' }),
       imageField(),
       linkPlugin({
         openInNewTab: true,
@@ -340,7 +340,7 @@ basicLiveBtn.addEventListener('click', () => {
       mathPlugin,
       blockMathField,
       tableField,
-      codeBlockField(),
+      codeBlockField({ interaction: 'toggle' }),
       imageField(),
       linkPlugin({
         openInNewTab: true,
