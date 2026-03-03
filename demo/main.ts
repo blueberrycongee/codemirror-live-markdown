@@ -48,6 +48,32 @@ This editor uses the advanced table plugin.
 
 Edit cells directly in Live mode. Use the MD button to switch to source.`;
 
+const codeToggleDoc = `# Code Block Toggle Preview
+
+This editor uses \`codeBlockField({ interaction: 'toggle' })\`.
+
+### How to try
+
+1. Code blocks are rendered in Live mode by default.
+2. Click the **MD** button in a code block to show Markdown source.
+3. In source mode, click **Code** to switch back to rendered preview.
+
+\`\`\`javascript
+function sum(a, b) {
+  return a + b;
+}
+
+console.log(sum(2, 3));
+\`\`\`
+
+\`\`\`python
+def greet(name):
+    return f"Hello, {name}"
+
+print(greet("Lumina"))
+\`\`\`
+`;
+
 const longDoc = `# Welcome to Live Preview! 🎉
 
 This is a demonstration of **Live Preview** mode for CodeMirror 6, inspired by Obsidian.
@@ -277,6 +303,29 @@ const advancedView = new EditorView({
 });
 
 setupMouseSelecting(advancedView);
+
+const codeToggleState = EditorState.create({
+  doc: codeToggleDoc,
+  extensions: [
+    history(),
+    keymap.of([...defaultKeymap, ...historyKeymap]),
+    markdown({ base: markdownLanguage, extensions: [Table] }),
+    EditorView.lineWrapping,
+    collapseOnSelectionFacet.of(true),
+    mouseSelectingField,
+    livePreviewPlugin,
+    markdownStylePlugin,
+    codeBlockField({ interaction: 'toggle' }),
+    editorTheme,
+  ],
+});
+
+const codeToggleView = new EditorView({
+  state: codeToggleState,
+  parent: document.getElementById('editor-code-toggle')!,
+});
+
+setupMouseSelecting(codeToggleView);
 
 const basicLiveBtn = document.getElementById('basicLiveBtn')!;
 const basicSourceBtn = document.getElementById('basicSourceBtn')!;

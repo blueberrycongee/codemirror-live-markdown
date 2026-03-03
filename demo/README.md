@@ -15,6 +15,7 @@ Open http://localhost:5173
 
 - Live Preview mode with smooth animations
 - Source mode toggle
+- Code block toggle mode (`interaction: 'toggle'`)
 - Bold, italic, strikethrough, code
 - Headers, lists, quotes
 - Drag selection optimization
