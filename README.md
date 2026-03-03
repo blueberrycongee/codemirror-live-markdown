@@ -108,6 +108,7 @@ import {
   tableField,
   tableEditorPlugin,
   codeBlockField,
+  codeBlockEditorPlugin,
   imageField,
   linkPlugin,
 } from 'codemirror-live-markdown';
@@ -122,6 +123,7 @@ const extensions = [
   tableField,                        // GFM tables
   tableEditorPlugin(),               // Editable tables with source toggle
   codeBlockField({ copyButton: true }), // Code blocks with syntax highlighting
+  codeBlockEditorPlugin({ copyButton: true }), // Code blocks with MD/Code toggle
   imageField(),                      // Image preview
   linkPlugin(),                      // Link rendering
 ];
@@ -140,6 +142,18 @@ codeBlockField({
 
 - `interaction: 'auto'` (default): enter source mode when cursor enters code block.
 - `interaction: 'toggle'`: keep rendered mode by default and switch with `MD` / `Code` buttons.
+
+### Code Block Editor Plugin
+
+```typescript
+codeBlockEditorPlugin({
+  copyButton: true,
+  lineNumbers: false,
+  defaultLanguage: 'text',
+})
+```
+
+`codeBlockEditorPlugin()` is a non-breaking convenience API for `codeBlockField({ interaction: 'toggle' })`.
 
 ### Registering Additional Languages
 
@@ -189,6 +203,7 @@ Customize with CSS variables:
 | `tableField` | Table rendering | `@lezer/markdown` Table |
 | `tableEditorPlugin()` | Editable table rendering | `@lezer/markdown` Table |
 | `codeBlockField(options?)` | Code block highlighting | `lowlight` |
+| `codeBlockEditorPlugin(options?)` | Code block editable preview with MD/Code toggle | `lowlight` |
 | `setCodeBlockSourceMode` | Toggle code block source mode via effect | — |
 | `imageField(options?)` | Image preview | — |
 | `linkPlugin(options?)` | Link rendering | — |

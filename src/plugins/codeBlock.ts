@@ -34,6 +34,9 @@ export interface CodeBlockOptions {
   interaction?: 'auto' | 'toggle';
 }
 
+export interface CodeBlockEditorOptions
+  extends Omit<CodeBlockOptions, 'interaction'> {}
+
 const defaultOptions: Required<CodeBlockOptions> = {
   lineNumbers: false,
   copyButton: true,
@@ -282,6 +285,13 @@ export function codeBlockField(options?: CodeBlockOptions) {
   const field = createCodeBlockField(mergedOptions);
 
   return [codeBlockSourceModeField, field];
+}
+
+export function codeBlockEditorPlugin(options?: CodeBlockEditorOptions) {
+  return codeBlockField({
+    ...options,
+    interaction: 'toggle',
+  });
 }
 
 export { setCodeBlockSourceMode };

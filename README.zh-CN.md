@@ -108,6 +108,7 @@ import {
   tableField,
   tableEditorPlugin,
   codeBlockField,
+  codeBlockEditorPlugin,
   imageField,
   linkPlugin,
 } from 'codemirror-live-markdown';
@@ -122,6 +123,7 @@ const extensions = [
   tableField,                        // GFM 表格
   tableEditorPlugin(),               // 可编辑表格（带源码切换）
   codeBlockField({ copyButton: true }), // 带语法高亮的代码块
+  codeBlockEditorPlugin({ copyButton: true }), // 带 MD/Code 切换的代码块编辑版
   imageField(),                      // 图片预览
   linkPlugin(),                      // 链接渲染
 ];
@@ -140,6 +142,18 @@ codeBlockField({
 
 - `interaction: 'auto'`（默认）：光标进入代码块时自动切回源码模式。  
 - `interaction: 'toggle'`：默认保持渲染态，通过 `MD` / `Code` 按钮切换。
+
+### 代码块编辑版插件
+
+```typescript
+codeBlockEditorPlugin({
+  copyButton: true,
+  lineNumbers: false,
+  defaultLanguage: 'text',
+})
+```
+
+`codeBlockEditorPlugin()` 是 `codeBlockField({ interaction: 'toggle' })` 的非破坏性便捷 API。
 
 ### 注册额外语言
 
@@ -189,6 +203,7 @@ registerLanguage('rust', rust);
 | `tableField` | 表格渲染 | `@lezer/markdown` Table |
 | `tableEditorPlugin()` | 可编辑表格渲染 | `@lezer/markdown` Table |
 | `codeBlockField(options?)` | 代码块高亮 | `lowlight` |
+| `codeBlockEditorPlugin(options?)` | 带 MD/Code 切换的代码块编辑预览 | `lowlight` |
 | `setCodeBlockSourceMode` | 通过 effect 切换代码块源码模式 | — |
 | `imageField(options?)` | 图片预览 | — |
 | `linkPlugin(options?)` | 链接渲染 | — |

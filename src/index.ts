@@ -19,8 +19,12 @@ export { markdownStylePlugin } from './plugins/markdownStyle';
 export { mathPlugin, blockMathField } from './plugins/math';
 export { tableField } from './plugins/table';
 export { tableEditorPlugin, tableEditorField, setTableSourceMode } from './plugins/tableEditor';
-export { codeBlockField, setCodeBlockSourceMode } from './plugins/codeBlock';
-export type { CodeBlockOptions } from './plugins/codeBlock';
+export {
+  codeBlockField,
+  codeBlockEditorPlugin,
+  setCodeBlockSourceMode,
+} from './plugins/codeBlock';
+export type { CodeBlockEditorOptions, CodeBlockOptions } from './plugins/codeBlock';
 export { imageField } from './plugins/image';
 export type { ImageOptions } from './plugins/image';
 export { linkPlugin } from './plugins/link';

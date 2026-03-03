@@ -12,7 +12,7 @@ import {
   blockMathField,
   tableField,
   tableEditorPlugin,
-  codeBlockField,
+  codeBlockEditorPlugin,
   imageField,
   linkPlugin,
   mouseSelectingField,
@@ -50,7 +50,7 @@ Edit cells directly in Live mode. Use the MD button to switch to source.`;
 
 const codeToggleDoc = `# Code Block Toggle Preview
 
-This editor uses \`codeBlockField({ interaction: 'toggle' })\`.
+This editor uses \`codeBlockEditorPlugin()\`.
 
 ### How to try
 
@@ -262,7 +262,7 @@ const basicState = EditorState.create({
       mathPlugin,
       blockMathField,
       tableField,
-      codeBlockField({ interaction: 'toggle' }),
+      codeBlockEditorPlugin(),
       imageField(),
       linkPlugin({
         openInNewTab: true,
@@ -315,7 +315,7 @@ const codeToggleState = EditorState.create({
     mouseSelectingField,
     livePreviewPlugin,
     markdownStylePlugin,
-    codeBlockField({ interaction: 'toggle' }),
+    codeBlockEditorPlugin(),
     editorTheme,
   ],
 });
@@ -340,7 +340,7 @@ basicLiveBtn.addEventListener('click', () => {
       mathPlugin,
       blockMathField,
       tableField,
-      codeBlockField({ interaction: 'toggle' }),
+      codeBlockEditorPlugin(),
       imageField(),
       linkPlugin({
         openInNewTab: true,

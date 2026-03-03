@@ -6,7 +6,12 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { markdown } from '@codemirror/lang-markdown';
-import { codeBlockField, CodeBlockOptions, setCodeBlockSourceMode } from '../codeBlock';
+import {
+  codeBlockEditorPlugin,
+  codeBlockField,
+  CodeBlockOptions,
+  setCodeBlockSourceMode,
+} from '../codeBlock';
 import { mouseSelectingField } from '../../core/mouseSelecting';
 import { collapseOnSelectionFacet } from '../../core/facets';
 
@@ -71,6 +76,26 @@ describe('codeBlockField', () => {
     it('should use default options when not provided', () => {
       expect(() => {
         view = createEditor('# Hello', 0);
+        cleanup(view);
+      }).not.toThrow();
+    });
+
+    it('should initialize editor plugin without errors', () => {
+      expect(() => {
+        const state = EditorState.create({
+          doc: '```javascript\nconst x = 1;\n```',
+          selection: { anchor: 18 },
+          extensions: [
+            markdown(),
+            mouseSelectingField,
+            collapseOnSelectionFacet.of(true),
+            codeBlockEditorPlugin(),
+          ],
+        });
+        view = new EditorView({
+          state,
+          parent: document.body,
+        });
         cleanup(view);
       }).not.toThrow();
     });
@@ -244,6 +269,32 @@ describe('codeBlockField', () => {
       ) as HTMLButtonElement | null;
       expect(codeButton).not.toBeNull();
       codeButton?.click();
+
+      const widget = view.dom.querySelector('.cm-codeblock-widget');
+      const sourceLine = view.dom.querySelector('.cm-codeblock-source');
+
+      expect(widget).not.toBeNull();
+      expect(sourceLine).toBeNull();
+
+      cleanup(view);
+    });
+
+    it('should keep widget when using codeBlockEditorPlugin and cursor is inside', () => {
+      const doc = '```javascript\nconst x = 1;\n```';
+      const state = EditorState.create({
+        doc,
+        selection: { anchor: 18 },
+        extensions: [
+          markdown(),
+          mouseSelectingField,
+          collapseOnSelectionFacet.of(true),
+          codeBlockEditorPlugin(),
+        ],
+      });
+      view = new EditorView({
+        state,
+        parent: document.body,
+      });
 
       const widget = view.dom.querySelector('.cm-codeblock-widget');
       const sourceLine = view.dom.querySelector('.cm-codeblock-source');
