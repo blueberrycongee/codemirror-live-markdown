@@ -11,7 +11,14 @@ import { EditorState, Range, StateField } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView } from '@codemirror/view';
 import { shouldShowSource } from '../core/shouldShowSource';
 import { mouseSelectingField } from '../core/mouseSelecting';
-import { createCodeBlockWidget } from '../widgets/codeBlockWidget';
+import {
+  createCodeBlockSourceToggleWidget,
+  createCodeBlockWidget,
+} from '../widgets/codeBlockWidget';
+import {
+  CodeBlockSourceModeToggle,
+  setCodeBlockSourceMode,
+} from './codeBlockEffects';
 
 /**
  * Code block plugin configuration
@@ -23,18 +30,77 @@ export interface CodeBlockOptions {
   copyButton?: boolean;
   /** Default language, default 'text' */
   defaultLanguage?: string;
+  /** Interaction mode: auto follows cursor, toggle uses explicit button */
+  interaction?: 'auto' | 'toggle';
 }
 
 const defaultOptions: Required<CodeBlockOptions> = {
   lineNumbers: false,
   copyButton: true,
   defaultLanguage: 'text',
+  interaction: 'auto',
 };
 
 /**
  * Languages to skip (handled by other plugins)
  */
 const SKIP_LANGUAGES = new Set(['math']);
+
+interface CodeBlockSourceRange {
+  from: number;
+  to: number;
+}
+
+function rangesOverlap(a: CodeBlockSourceRange, b: CodeBlockSourceRange): boolean {
+  return a.from <= b.to && a.to >= b.from;
+}
+
+function removeRange(
+  ranges: CodeBlockSourceRange[],
+  target: CodeBlockSourceRange
+): CodeBlockSourceRange[] {
+  return ranges.filter((range) => !rangesOverlap(range, target));
+}
+
+function addRange(
+  ranges: CodeBlockSourceRange[],
+  next: CodeBlockSourceRange
+): CodeBlockSourceRange[] {
+  if (ranges.some((range) => rangesOverlap(range, next))) {
+    return ranges;
+  }
+  return [...ranges, next];
+}
+
+function isCodeBlockInSourceMode(
+  ranges: CodeBlockSourceRange[],
+  from: number,
+  to: number
+): boolean {
+  return ranges.some((range) => range.from <= to && range.to >= from);
+}
+
+const codeBlockSourceModeField = StateField.define<CodeBlockSourceRange[]>({
+  create: () => [],
+  update(ranges, tr) {
+    let next = ranges.map((range) => ({
+      from: tr.changes.mapPos(range.from, 1),
+      to: tr.changes.mapPos(range.to, -1),
+    }));
+
+    for (const effect of tr.effects) {
+      if (!effect.is(setCodeBlockSourceMode)) continue;
+      const { from, to, showSource } = effect.value as CodeBlockSourceModeToggle;
+      const mapped = {
+        from: tr.changes.mapPos(from, 1),
+        to: tr.changes.mapPos(to, -1),
+      };
+      next = showSource ? addRange(next, mapped) : removeRange(next, mapped);
+    }
+
+    return next;
+  },
+});
 
 /**
  * Build code block decorations
@@ -44,7 +110,9 @@ function buildCodeBlockDecorations(
   options: Required<CodeBlockOptions>
 ): DecorationSet {
   const decorations: Range<Decoration>[] = [];
-  const isDrag = state.field(mouseSelectingField, false);
+  const isAutoInteraction = options.interaction === 'auto';
+  const isDrag = isAutoInteraction ? state.field(mouseSelectingField, false) : false;
+  const sourceRanges = state.field(codeBlockSourceModeField);
 
   syntaxTree(state).iterate({
     enter: (node) => {
@@ -81,16 +149,19 @@ function buildCodeBlockDecorations(
           }
         }
 
-        // Decide display mode
-        const isTouched = shouldShowSource(state, node.from, node.to);
+        const showSource =
+          options.interaction === 'toggle'
+            ? isCodeBlockInSourceMode(sourceRanges, node.from, node.to)
+            : shouldShowSource(state, node.from, node.to) || isDrag;
 
-        if (!isTouched && !isDrag) {
+        if (!showSource) {
           // Render mode: show widget
           const widget = createCodeBlockWidget({
             code,
             language,
             showLineNumbers: options.lineNumbers,
             showCopyButton: options.copyButton,
+            showSourceToggle: options.interaction === 'toggle',
             from: node.from,
             to: node.to,
             codeFrom,
@@ -101,7 +172,19 @@ function buildCodeBlockDecorations(
             Decoration.replace({ widget, block: true }).range(node.from, node.to)
           );
         } else {
-          // Edit mode: add background to each line
+          if (options.interaction === 'toggle') {
+            const sourceToggleWidget = createCodeBlockSourceToggleWidget(
+              node.from,
+              node.to
+            );
+            decorations.push(
+              Decoration.widget({ widget: sourceToggleWidget, block: true }).range(
+                node.from
+              )
+            );
+          }
+
+          // Source mode: add background to each line
           for (let pos = node.from; pos <= node.to; ) {
             const line = state.doc.lineAt(pos);
             decorations.push(
@@ -138,6 +221,19 @@ function createCodeBlockClickHandler() {
 
       return true;
     },
+    'codeblock-toggle-source': (event: Event, view) => {
+      const customEvent = event as CustomEvent<CodeBlockSourceModeToggle>;
+      const payload = customEvent.detail;
+
+      view.dispatch({
+        selection: payload.showSource ? { anchor: payload.from } : undefined,
+        effects: setCodeBlockSourceMode.of(payload),
+        scrollIntoView: true,
+      });
+
+      view.focus();
+      return true;
+    },
   });
 }
 
@@ -154,8 +250,16 @@ function createCodeBlockField(
 
     update(deco, tr) {
       // Rebuild on document or config change
-      if (tr.docChanged || tr.reconfigured) {
+      if (
+        tr.docChanged ||
+        tr.reconfigured ||
+        tr.effects.some((effect) => effect.is(setCodeBlockSourceMode))
+      ) {
         return buildCodeBlockDecorations(tr.state, options);
+      }
+
+      if (options.interaction !== 'auto') {
+        return deco;
       }
 
       // Rebuild on drag state change
@@ -215,5 +319,7 @@ export function codeBlockField(options?: CodeBlockOptions) {
   const field = createCodeBlockField(mergedOptions);
   const clickHandler = createCodeBlockClickHandler();
 
-  return [field, clickHandler];
+  return [codeBlockSourceModeField, field, clickHandler];
 }
+
+export { setCodeBlockSourceMode };

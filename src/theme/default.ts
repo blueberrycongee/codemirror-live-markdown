@@ -373,6 +373,14 @@ export const editorTheme = EditorView.theme({
     overflow: 'hidden',
     backgroundColor: 'hsl(var(--muted, 220 14% 96%))',
   },
+  '.cm-codeblock-actions': {
+    position: 'absolute',
+    top: '8px',
+    right: '8px',
+    display: 'flex',
+    gap: '6px',
+    zIndex: '1',
+  },
   '.cm-codeblock-widget pre': {
     margin: '0',
     padding: '0',
@@ -395,18 +403,29 @@ export const editorTheme = EditorView.theme({
   '.cm-codeblock-fence': {
     color: 'hsl(var(--muted-foreground, 220 9% 46%) / 0.5)',
   },
-  '.cm-codeblock-copy': {
-    position: 'absolute',
-    top: '8px',
-    right: '8px',
+  '.cm-codeblock-source-toggle': {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    marginBottom: '6px',
+  },
+  '.cm-codeblock-toggle': {
+    border: '1px solid hsl(var(--border, 220 13% 91%))',
+    backgroundColor: 'hsl(var(--background, 0 0% 100%))',
+    color: 'hsl(var(--foreground, 222 47% 11%))',
+    borderRadius: '6px',
     padding: '4px 8px',
-    border: 'none',
+    fontSize: '12px',
+    lineHeight: '1',
+    cursor: 'pointer',
+  },
+  '.cm-codeblock-copy': {
+    padding: '4px 8px',
+    border: '1px solid hsl(var(--border, 220 13% 91%))',
     borderRadius: '4px',
     backgroundColor: 'hsl(var(--background, 0 0% 100%))',
     cursor: 'pointer',
     fontSize: '12px',
     transition: 'background-color 0.2s',
-    zIndex: '1',
   },
   '.cm-codeblock-copy:hover': {
     backgroundColor: 'hsl(var(--border, 220 13% 91%))',

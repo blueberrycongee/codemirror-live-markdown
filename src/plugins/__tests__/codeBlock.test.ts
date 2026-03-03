@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { markdown } from '@codemirror/lang-markdown';
-import { codeBlockField, CodeBlockOptions } from '../codeBlock';
+import { codeBlockField, CodeBlockOptions, setCodeBlockSourceMode } from '../codeBlock';
 import { mouseSelectingField } from '../../core/mouseSelecting';
 import { collapseOnSelectionFacet } from '../../core/facets';
 
@@ -157,6 +157,74 @@ describe('codeBlockField', () => {
       // Should show source mode
       const sourceLine = view.dom.querySelector('.cm-codeblock-source');
       expect(sourceLine).not.toBeNull();
+
+      cleanup(view);
+    });
+
+    it('should keep widget when interaction is toggle and cursor is inside', () => {
+      const doc = '```javascript\nconst x = 1;\n```';
+      view = createEditor(doc, 18, { interaction: 'toggle' });
+
+      const widget = view.dom.querySelector('.cm-codeblock-widget');
+      const sourceLine = view.dom.querySelector('.cm-codeblock-source');
+
+      expect(widget).not.toBeNull();
+      expect(sourceLine).toBeNull();
+
+      cleanup(view);
+    });
+
+    it('should switch to source mode when toggle effect is dispatched', () => {
+      const doc = '```javascript\nconst x = 1;\n```';
+      view = createEditor(doc, 0, { interaction: 'toggle' });
+
+      view.dispatch({
+        effects: setCodeBlockSourceMode.of({
+          from: 0,
+          to: doc.length,
+          showSource: true,
+        }),
+      });
+
+      const sourceLine = view.dom.querySelector('.cm-codeblock-source');
+      const sourceToggle = view.dom.querySelector('.cm-codeblock-source-toggle');
+
+      expect(sourceLine).not.toBeNull();
+      expect(sourceToggle).not.toBeNull();
+
+      cleanup(view);
+    });
+
+    it('should render MD toggle button in toggle mode', () => {
+      const doc = '```javascript\nconst x = 1;\n```';
+      view = createEditor(doc, 0, { interaction: 'toggle' });
+
+      const toggleButton = view.dom.querySelector(
+        '.cm-codeblock-toggle'
+      ) as HTMLButtonElement | null;
+
+      expect(toggleButton).not.toBeNull();
+      expect(toggleButton?.textContent).toBe('MD');
+
+      cleanup(view);
+    });
+
+    it('should switch to source mode when MD button is clicked', () => {
+      const doc = '```javascript\nconst x = 1;\n```';
+      view = createEditor(doc, 0, { interaction: 'toggle' });
+
+      const toggleButton = view.dom.querySelector(
+        '.cm-codeblock-toggle'
+      ) as HTMLButtonElement | null;
+
+      expect(toggleButton).not.toBeNull();
+      toggleButton?.click();
+
+      const sourceLine = view.dom.querySelector('.cm-codeblock-source');
+      const sourceToggle = view.dom.querySelector('.cm-codeblock-source-toggle');
+
+      expect(sourceLine).not.toBeNull();
+      expect(sourceToggle).not.toBeNull();
 
       cleanup(view);
     });

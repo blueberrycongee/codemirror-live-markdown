@@ -20,6 +20,8 @@ export interface CodeBlockData {
   showLineNumbers: boolean;
   /** Whether to show copy button */
   showCopyButton: boolean;
+  /** Whether to show source toggle button */
+  showSourceToggle?: boolean;
   /** Code block start position in document */
   from: number;
   /** Code block end position in document */
@@ -55,8 +57,15 @@ export class CodeBlockWidget extends WidgetType {
    * Render to DOM element
    */
   toDOM(): HTMLElement {
-    const { code, language, showLineNumbers, showCopyButton, from, lineStarts } =
-      this.data;
+    const {
+      code,
+      language,
+      showLineNumbers,
+      showCopyButton,
+      showSourceToggle = false,
+      from,
+      lineStarts,
+    } = this.data;
     const widgetData = this.data;
 
     // Container
@@ -76,8 +85,8 @@ export class CodeBlockWidget extends WidgetType {
       (event) => {
         const target = event.target as HTMLElement;
 
-        // Don't handle copy button
-        if (target.closest('.cm-codeblock-copy')) {
+        // Don't handle toolbar buttons
+        if (target.closest('.cm-codeblock-copy, .cm-codeblock-toggle')) {
           return;
         }
 
@@ -88,15 +97,6 @@ export class CodeBlockWidget extends WidgetType {
         // Find clicked line
         const lineEl = target.closest('.cm-codeblock-line');
         let targetPos = widgetData.from;
-
-        console.log('[CodeBlock Widget] mousedown', {
-          lineEl: !!lineEl,
-          lineIndex: lineEl ? (lineEl as HTMLElement).dataset.lineIndex : null,
-          lineStarts: widgetData.lineStarts,
-          from: widgetData.from,
-          to: widgetData.to,
-          code: widgetData.code.substring(0, 50) + '...',
-        });
 
         if (lineEl) {
           const lineIndex = parseInt(
@@ -123,8 +123,6 @@ export class CodeBlockWidget extends WidgetType {
           }
         }
 
-        console.log('[CodeBlock Widget] targetPos:', targetPos);
-
         // Dispatch custom event for codeBlock.ts handler to set cursor
         container.dispatchEvent(
           new CustomEvent('codeblock-click', {
@@ -136,8 +134,30 @@ export class CodeBlockWidget extends WidgetType {
       true // Capture phase
     );
 
-    if (showLineNumbers) {
-      container.className += ' cm-codeblock-line-numbers';
+    const toolbar = document.createElement('div');
+    toolbar.className = 'cm-codeblock-actions';
+
+    if (showSourceToggle) {
+      const toggleBtn = document.createElement('button');
+      toggleBtn.type = 'button';
+      toggleBtn.className = 'cm-codeblock-toggle';
+      toggleBtn.textContent = 'MD';
+      toggleBtn.setAttribute('aria-label', 'Show markdown source');
+      toggleBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        container.dispatchEvent(
+          new CustomEvent('codeblock-toggle-source', {
+            bubbles: true,
+            detail: {
+              from: widgetData.from,
+              to: widgetData.to,
+              showSource: true,
+            },
+          })
+        );
+      });
+      toolbar.appendChild(toggleBtn);
     }
 
     // Copy button
@@ -169,7 +189,11 @@ export class CodeBlockWidget extends WidgetType {
         }
       });
 
-      container.appendChild(copyBtn);
+      toolbar.appendChild(copyBtn);
+    }
+
+    if (toolbar.childElementCount > 0) {
+      container.appendChild(toolbar);
     }
 
     // Code area
@@ -309,14 +333,6 @@ export class CodeBlockWidget extends WidgetType {
       }
     }
 
-    console.log('[CodeBlock Widget] measureClickOffset', {
-      clickX,
-      paddingLeft,
-      textClickX,
-      sourceText: sourceText.substring(0, 30) + '...',
-      charOffset: left,
-    });
-
     return Math.min(left, sourceText.length);
   }
 
@@ -345,4 +361,52 @@ export class CodeBlockWidget extends WidgetType {
  */
 export function createCodeBlockWidget(data: CodeBlockData): CodeBlockWidget {
   return new CodeBlockWidget(data);
+}
+
+export class CodeBlockSourceToggleWidget extends WidgetType {
+  constructor(
+    readonly from: number,
+    readonly to: number
+  ) {
+    super();
+  }
+
+  toDOM(): HTMLElement {
+    const container = document.createElement('div');
+    container.className = 'cm-codeblock-source-toggle';
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'cm-codeblock-toggle';
+    button.textContent = 'Code';
+    button.setAttribute('aria-label', 'Show rendered code block');
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      container.dispatchEvent(
+        new CustomEvent('codeblock-toggle-source', {
+          bubbles: true,
+          detail: {
+            from: this.from,
+            to: this.to,
+            showSource: false,
+          },
+        })
+      );
+    });
+
+    container.appendChild(button);
+    return container;
+  }
+
+  ignoreEvent(): boolean {
+    return true;
+  }
+}
+
+export function createCodeBlockSourceToggleWidget(
+  from: number,
+  to: number
+): CodeBlockSourceToggleWidget {
+  return new CodeBlockSourceToggleWidget(from, to);
 }
