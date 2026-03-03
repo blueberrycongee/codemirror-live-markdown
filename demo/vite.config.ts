@@ -10,7 +10,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      'codemirror-live-markdown': path.resolve(__dirname, '../dist/index.js'),
+      // Point demo directly to source to avoid stale dist builds during development.
+      'codemirror-live-markdown': path.resolve(__dirname, '../src/index.ts'),
       // Ensure all @codemirror/* packages use the same instance
       '@codemirror/state': path.resolve(__dirname, 'node_modules/@codemirror/state'),
       '@codemirror/view': path.resolve(__dirname, 'node_modules/@codemirror/view'),
