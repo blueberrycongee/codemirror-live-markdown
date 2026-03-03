@@ -435,5 +435,36 @@ describe('CodeBlockWidget', () => {
 
       expect(widget.ignoreEvent(event)).toBe(true);
     });
+
+    it('should stop mousedown bubbling from code lines in toggle mode', () => {
+      const widget = createCodeBlockWidget(
+        createTestData({
+          code: 'line1\nline2',
+          lineStarts: [14, 20],
+          showSourceToggle: true,
+        })
+      );
+      const wrapper = document.createElement('div');
+      const onParentMouseDown = vi.fn();
+      wrapper.addEventListener('mousedown', onParentMouseDown);
+
+      const dom = widget.toDOM();
+      wrapper.appendChild(dom);
+
+      const line = dom.querySelector(
+        '.cm-codeblock-line[data-line-index="0"]'
+      ) as HTMLElement | null;
+      expect(line).not.toBeNull();
+      if (!line) return;
+
+      line.dispatchEvent(
+        new MouseEvent('mousedown', {
+          bubbles: true,
+          cancelable: true,
+        })
+      );
+
+      expect(onParentMouseDown).not.toHaveBeenCalled();
+    });
   });
 });

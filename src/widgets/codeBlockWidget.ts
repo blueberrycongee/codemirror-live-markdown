@@ -81,6 +81,22 @@ export class CodeBlockWidget extends WidgetType {
       container.className += ' cm-codeblock-line-numbers';
     }
 
+    if (showSourceToggle) {
+      container.addEventListener(
+        'mousedown',
+        (event) => {
+          const target = event.target as HTMLElement | null;
+          if (target?.closest('.cm-codeblock-copy, .cm-codeblock-toggle')) {
+            return;
+          }
+          // Prevent editor-level drag state handlers from firing while
+          // keeping native text selection intact.
+          event.stopPropagation();
+        },
+        true
+      );
+    }
+
     const enableClickToEdit = !showSourceToggle;
 
     // Auto mode: click rendered block to jump to source position.
