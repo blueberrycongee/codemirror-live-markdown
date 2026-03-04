@@ -12,8 +12,15 @@
  */
 
 import { syntaxTree } from '@codemirror/language';
-import { EditorState, Prec, Range, StateField } from '@codemirror/state';
-import { Decoration, DecorationSet, EditorView, WidgetType } from '@codemirror/view';
+import { EditorState, Range, StateField } from '@codemirror/state';
+import {
+  Decoration,
+  DecorationSet,
+  EditorView,
+  ViewPlugin,
+  ViewUpdate,
+  WidgetType,
+} from '@codemirror/view';
 import { shouldShowSource } from '../core/shouldShowSource';
 import { mouseSelectingField } from '../core/mouseSelecting';
 import {
@@ -586,26 +593,80 @@ function createCodeBlockField(
  * ```
  */
 /**
- * drawSelection() hides native ::selection on all .cm-line elements using
- * Prec.highest.  In inline mode the code-block content lines have an opaque
- * background that also covers drawSelection's selectionLayer (z-index:-1).
- * Re-enable native ::selection specifically for .cm-codeblock-content using
- * Prec.highest + higher CSS specificity so selection is visible again.
+ * drawSelection() renders its selection layer behind .cm-content (z-index:-1).
+ * Inline code-block lines have an opaque background that covers this layer,
+ * and drawSelection also hides native ::selection via Prec.highest CSS.
  *
- * Uses an explicit RGBA color instead of the 'Highlight' CSS system keyword
- * because Tauri/WebKit may not resolve 'Highlight' to a visible color.
- * Consumers can override via --cm-codeblock-selection CSS custom property.
+ * Instead of fighting CSS specificity, this ViewPlugin adds Decoration.mark
+ * spans for selected ranges that overlap code-block content.  These spans
+ * render INSIDE the .cm-line (above the opaque background), so selection
+ * is always visible regardless of the browser engine (Chromium, WebKit, etc.).
  */
-const inlineSelectionFix = Prec.highest(
-  EditorView.theme({
-    '.cm-line.cm-codeblock-content': {
-      '&::selection, & ::selection': {
-        backgroundColor:
-          'var(--cm-codeblock-selection, rgba(128, 188, 254, 0.4)) !important',
-      },
-    },
-  }),
+const selMark = Decoration.mark({ class: 'cm-codeblock-sel' });
+
+const codeBlockSelectionPlugin = ViewPlugin.fromClass(
+  class {
+    decorations: DecorationSet;
+
+    constructor(view: EditorView) {
+      this.decorations = this.build(view);
+    }
+
+    update(update: ViewUpdate) {
+      if (update.selectionSet || update.docChanged || update.viewportChanged) {
+        this.decorations = this.build(update.view);
+      }
+    }
+
+    build(view: EditorView): DecorationSet {
+      const sel = view.state.selection.main;
+      if (sel.empty) return Decoration.none;
+
+      const ranges: Range<Decoration>[] = [];
+
+      syntaxTree(view.state).iterate({
+        from: sel.from,
+        to: sel.to,
+        enter: (node) => {
+          if (node.name !== 'FencedCode') return;
+
+          // Skip special languages (math, mermaid, etc.)
+          const codeInfo = node.node.getChild('CodeInfo');
+          if (codeInfo) {
+            const lang = view.state.doc
+              .sliceString(codeInfo.from, codeInfo.to)
+              .trim();
+            if (SKIP_LANGUAGES.has(lang)) return;
+          }
+
+          // Find content range between fences
+          const openFenceLine = view.state.doc.lineAt(node.from);
+          const lastLine = view.state.doc.lineAt(node.to);
+          const contentFrom = openFenceLine.to + 1;
+          const contentTo = lastLine.from > contentFrom ? lastLine.from - 1 : contentFrom;
+
+          if (contentFrom >= contentTo) return;
+
+          // Intersect with selection
+          const from = Math.max(sel.from, contentFrom);
+          const to = Math.min(sel.to, contentTo);
+          if (from < to) {
+            ranges.push(selMark.range(from, to));
+          }
+        },
+      });
+
+      return Decoration.set(ranges, true);
+    }
+  },
+  { decorations: (v) => v.decorations },
 );
+
+const codeBlockSelectionTheme = EditorView.theme({
+  '.cm-codeblock-sel': {
+    backgroundColor: 'var(--cm-codeblock-selection, rgba(128, 188, 254, 0.4))',
+  },
+});
 
 export function codeBlockField(options?: CodeBlockOptions) {
   const mergedOptions = { ...defaultOptions, ...options };
@@ -614,7 +675,7 @@ export function codeBlockField(options?: CodeBlockOptions) {
 
   const extensions = [codeBlockSourceModeField, field];
   if (mergedOptions.interaction === 'inline') {
-    extensions.push(inlineSelectionFix);
+    extensions.push(codeBlockSelectionPlugin, codeBlockSelectionTheme);
   }
   return extensions;
 }
