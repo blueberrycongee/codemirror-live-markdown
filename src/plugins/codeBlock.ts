@@ -613,9 +613,21 @@ const codeBlockSelectionPlugin = ViewPlugin.fromClass(
     }
 
     update(update: ViewUpdate) {
-      if (update.selectionSet || update.docChanged || update.viewportChanged) {
+      if (update.docChanged || update.viewportChanged) {
         this.decorations = this.build(update.view);
+        return;
       }
+      if (!update.selectionSet) return;
+      const isDragging = update.state.field(mouseSelectingField, false);
+      const wasDragging = update.startState.field(mouseSelectingField, false);
+      // Rebuild when drag ends so selection marks catch up
+      if (wasDragging && !isDragging) {
+        this.decorations = this.build(update.view);
+        return;
+      }
+      // Skip during drag – native/drawSelection handles transient feedback
+      if (isDragging) return;
+      this.decorations = this.build(update.view);
     }
 
     build(view: EditorView): DecorationSet {
