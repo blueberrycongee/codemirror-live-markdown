@@ -4,17 +4,23 @@
  * Implements syntax highlighting preview for Markdown code blocks
  * Shows rendered result when cursor is outside code block, shows source when inside
  * Supports precise click position mapping
+ *
+ * Modes:
+ * - auto: shows rendered widget normally, switches to source on cursor enter
+ * - toggle: shows rendered widget by default, requires explicit button click for source
+ * - inline: replaces only fence lines, keeps code content in contentDOM for native editing
  */
 
 import { syntaxTree } from '@codemirror/language';
 import { EditorState, Range, StateField } from '@codemirror/state';
-import { Decoration, DecorationSet, EditorView } from '@codemirror/view';
+import { Decoration, DecorationSet, EditorView, WidgetType } from '@codemirror/view';
 import { shouldShowSource } from '../core/shouldShowSource';
 import { mouseSelectingField } from '../core/mouseSelecting';
 import {
   createCodeBlockSourceToggleWidget,
   createCodeBlockWidget,
 } from '../widgets/codeBlockWidget';
+import { highlightCodeHast } from '../utils/codeHighlight';
 import {
   CodeBlockSourceModeToggle,
   setCodeBlockSourceMode,
@@ -30,8 +36,8 @@ export interface CodeBlockOptions {
   copyButton?: boolean;
   /** Default language, default 'text' */
   defaultLanguage?: string;
-  /** Interaction mode: auto follows cursor, toggle uses explicit button */
-  interaction?: 'auto' | 'toggle';
+  /** Interaction mode: auto follows cursor, toggle uses explicit button, inline keeps code editable */
+  interaction?: 'auto' | 'toggle' | 'inline';
 }
 
 export interface CodeBlockEditorOptions
@@ -105,8 +111,341 @@ const codeBlockSourceModeField = StateField.define<CodeBlockSourceRange[]>({
   },
 });
 
+// ─── Inline mode widgets ───────────────────────────────────────────────
+
 /**
- * Build code block decorations
+ * Header widget replacing the opening fence line (```lang)
+ * Shows language badge, copy button, and MD (source-toggle) button
+ */
+class CodeBlockHeaderWidget extends WidgetType {
+  constructor(
+    readonly language: string,
+    readonly code: string,
+    readonly from: number,
+    readonly to: number,
+    readonly showCopyButton: boolean
+  ) {
+    super();
+  }
+
+  eq(other: CodeBlockHeaderWidget): boolean {
+    return (
+      other.language === this.language &&
+      other.code === this.code &&
+      other.from === this.from &&
+      other.to === this.to &&
+      other.showCopyButton === this.showCopyButton
+    );
+  }
+
+  toDOM(view?: EditorView): HTMLElement {
+    const header = document.createElement('div');
+    header.className = 'cm-codeblock-header';
+
+    // Language badge
+    if (this.language && this.language !== 'text') {
+      const badge = document.createElement('span');
+      badge.className = 'cm-codeblock-lang';
+      badge.textContent = this.language;
+      header.appendChild(badge);
+    }
+
+    // Spacer
+    const spacer = document.createElement('span');
+    spacer.style.flex = '1';
+    header.appendChild(spacer);
+
+    // Copy button
+    if (this.showCopyButton) {
+      const copyBtn = document.createElement('button');
+      copyBtn.type = 'button';
+      copyBtn.className = 'cm-codeblock-copy';
+      copyBtn.textContent = 'Copy';
+      copyBtn.setAttribute('aria-label', 'Copy code');
+      const code = this.code;
+      copyBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+          await navigator.clipboard.writeText(code);
+          copyBtn.textContent = 'Copied!';
+          copyBtn.classList.add('cm-codeblock-copy-success');
+          setTimeout(() => {
+            copyBtn.textContent = 'Copy';
+            copyBtn.classList.remove('cm-codeblock-copy-success');
+          }, 2000);
+        } catch {
+          copyBtn.textContent = 'Failed';
+          setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+        }
+      });
+      header.appendChild(copyBtn);
+    }
+
+    // MD button (switch to source mode)
+    const mdBtn = document.createElement('button');
+    mdBtn.type = 'button';
+    mdBtn.className = 'cm-codeblock-toggle';
+    mdBtn.textContent = 'MD';
+    mdBtn.setAttribute('aria-label', 'Show markdown source');
+    const from = this.from;
+    const to = this.to;
+    mdBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!view) return;
+      view.dispatch({
+        effects: setCodeBlockSourceMode.of({ from, to, showSource: true }),
+        scrollIntoView: true,
+      });
+      view.focus();
+    });
+    header.appendChild(mdBtn);
+
+    return header;
+  }
+
+  ignoreEvent(): boolean {
+    return true;
+  }
+}
+
+/**
+ * Footer widget replacing the closing fence line (```)
+ * Visual element: rounded bottom + background color
+ */
+class CodeBlockFooterWidget extends WidgetType {
+  eq(): boolean {
+    return true;
+  }
+
+  toDOM(): HTMLElement {
+    const footer = document.createElement('div');
+    footer.className = 'cm-codeblock-footer';
+    return footer;
+  }
+
+  ignoreEvent(): boolean {
+    return true;
+  }
+}
+
+// ─── HAST → Mark decorations ──────────────────────────────────────────
+
+interface HastNode {
+  type: string;
+  value?: string;
+  tagName?: string;
+  properties?: { className?: string[] };
+  children?: HastNode[];
+}
+
+/**
+ * Convert lowlight HAST tree to Decoration.mark ranges for syntax highlighting.
+ * Walks the tree and creates mark decorations for text nodes with CSS classes.
+ */
+function hastToMarkDecorations(
+  root: HastNode,
+  basePos: number
+): Range<Decoration>[] {
+  const result: Range<Decoration>[] = [];
+  let offset = 0;
+
+  function walk(node: HastNode, cls?: string) {
+    if (node.type === 'text') {
+      const len = node.value?.length || 0;
+      if (cls && len > 0) {
+        result.push(
+          Decoration.mark({ class: cls }).range(
+            basePos + offset,
+            basePos + offset + len
+          )
+        );
+      }
+      offset += len;
+    } else if (node.type === 'element' || node.type === 'root') {
+      const nodeClass = node.properties?.className?.join(' ');
+      const effectiveClass = nodeClass || cls;
+      if (node.children) {
+        for (const child of node.children) {
+          walk(child, effectiveClass);
+        }
+      }
+    }
+  }
+
+  walk(root);
+  return result;
+}
+
+// ─── Build inline decorations ─────────────────────────────────────────
+
+/**
+ * Build decorations for inline mode:
+ * - Render mode: replace fences with header/footer widgets, add line + mark decorations
+ * - Source mode: show full source with toggle button
+ */
+function buildCodeBlockInlineDecorations(
+  state: EditorState,
+  options: Required<CodeBlockOptions>
+): DecorationSet {
+  const decorations: Range<Decoration>[] = [];
+  const sourceRanges = state.field(codeBlockSourceModeField);
+
+  syntaxTree(state).iterate({
+    enter: (node) => {
+      if (node.name !== 'FencedCode') return;
+
+      // Get language info
+      const codeInfo = node.node.getChild('CodeInfo');
+      let language = options.defaultLanguage;
+      if (codeInfo) {
+        language = state.doc.sliceString(codeInfo.from, codeInfo.to).trim();
+      }
+
+      // Skip special languages
+      if (SKIP_LANGUAGES.has(language)) return;
+
+      // Get code content
+      const codeText = node.node.getChild('CodeText');
+      const code = codeText
+        ? state.doc.sliceString(codeText.from, codeText.to)
+        : '';
+
+      const showSource = isCodeBlockInSourceMode(
+        sourceRanges,
+        node.from,
+        node.to
+      );
+
+      if (showSource) {
+        // Source mode: show toggle button + source line styling
+        const sourceToggleWidget = createCodeBlockSourceToggleWidget(
+          node.from,
+          node.to
+        );
+        decorations.push(
+          Decoration.widget({ widget: sourceToggleWidget, block: true }).range(
+            node.from
+          )
+        );
+
+        for (let pos = node.from; pos <= node.to; ) {
+          const line = state.doc.lineAt(pos);
+          decorations.push(
+            Decoration.line({ class: 'cm-codeblock-source' }).range(line.from)
+          );
+          pos = line.to + 1;
+        }
+      } else {
+        // Render mode (inline): replace fences, keep code content editable
+
+        // Find the opening fence line range
+        const openFenceLine = state.doc.lineAt(node.from);
+
+        // Find the closing fence line range
+        const closeFenceLine = state.doc.lineAt(node.to);
+
+        // 1. Replace opening fence line with header widget
+        const headerWidget = new CodeBlockHeaderWidget(
+          language,
+          code,
+          node.from,
+          node.to,
+          options.copyButton
+        );
+        decorations.push(
+          Decoration.replace({ widget: headerWidget, block: true }).range(
+            openFenceLine.from,
+            openFenceLine.to
+          )
+        );
+
+        // 2. Line decorations for code content lines
+        if (codeText) {
+          for (let pos = codeText.from; pos <= codeText.to; ) {
+            const line = state.doc.lineAt(pos);
+            // Only add if this line is between fences (not the fence lines themselves)
+            if (line.from > openFenceLine.to && line.from < closeFenceLine.from) {
+              decorations.push(
+                Decoration.line({ class: 'cm-codeblock-content' }).range(
+                  line.from
+                )
+              );
+            } else if (line.from === codeText.from && line.from > openFenceLine.to) {
+              // First code line if it starts right after fence
+              decorations.push(
+                Decoration.line({ class: 'cm-codeblock-content' }).range(
+                  line.from
+                )
+              );
+            }
+            pos = line.to + 1;
+          }
+        }
+
+        // Also handle lines between open fence and close fence that aren't codeText
+        // (e.g., empty code blocks)
+        if (!codeText) {
+          // Empty code block: just header + footer, no content lines
+        } else {
+          // Make sure all lines between fences get the content class
+          const firstContentLine = state.doc.lineAt(openFenceLine.to + 1);
+          const lastContentLine = closeFenceLine.number > 1
+            ? state.doc.line(closeFenceLine.number - 1)
+            : null;
+
+          if (lastContentLine && firstContentLine.from <= lastContentLine.from) {
+            for (let lineNum = firstContentLine.number; lineNum <= lastContentLine.number; lineNum++) {
+              const line = state.doc.line(lineNum);
+              // Check we haven't already added this line
+              const alreadyAdded = decorations.some(
+                (d) => d.from === line.from && d.value.spec?.class === 'cm-codeblock-content'
+              );
+              if (!alreadyAdded) {
+                decorations.push(
+                  Decoration.line({ class: 'cm-codeblock-content' }).range(
+                    line.from
+                  )
+                );
+              }
+            }
+          }
+        }
+
+        // 3. Mark decorations for syntax highlighting (from hast)
+        if (codeText && code) {
+          const hast = highlightCodeHast(code, language || undefined);
+          if (hast) {
+            const marks = hastToMarkDecorations(hast as HastNode, codeText.from);
+            for (const mark of marks) {
+              // Ensure mark is within document bounds
+              if (mark.from >= 0 && mark.to <= state.doc.length) {
+                decorations.push(mark);
+              }
+            }
+          }
+        }
+
+        // 4. Replace closing fence line with footer widget
+        const footerWidget = new CodeBlockFooterWidget();
+        decorations.push(
+          Decoration.replace({ widget: footerWidget, block: true }).range(
+            closeFenceLine.from,
+            closeFenceLine.to
+          )
+        );
+      }
+    },
+  });
+
+  return Decoration.set(decorations.sort((a, b) => a.from - b.from), true);
+}
+
+// ─── Build standard decorations (auto/toggle) ────────────────────────
+
+/**
+ * Build code block decorations for auto/toggle mode
  */
 function buildCodeBlockDecorations(
   state: EditorState,
@@ -209,9 +548,12 @@ function buildCodeBlockDecorations(
 function createCodeBlockField(
   options: Required<CodeBlockOptions>
 ): StateField<DecorationSet> {
+  const isInline = options.interaction === 'inline';
+  const buildFn = isInline ? buildCodeBlockInlineDecorations : buildCodeBlockDecorations;
+
   return StateField.define<DecorationSet>({
     create(state) {
-      return buildCodeBlockDecorations(state, options);
+      return buildFn(state, options);
     },
 
     update(deco, tr) {
@@ -221,9 +563,10 @@ function createCodeBlockField(
         tr.reconfigured ||
         tr.effects.some((effect) => effect.is(setCodeBlockSourceMode))
       ) {
-        return buildCodeBlockDecorations(tr.state, options);
+        return buildFn(tr.state, options);
       }
 
+      // Inline and toggle modes: don't rebuild on selection change
       if (options.interaction !== 'auto') {
         return deco;
       }
@@ -233,7 +576,7 @@ function createCodeBlockField(
       const wasDragging = tr.startState.field(mouseSelectingField, false);
 
       if (wasDragging && !isDragging) {
-        return buildCodeBlockDecorations(tr.state, options);
+        return buildFn(tr.state, options);
       }
 
       // Keep unchanged during drag
@@ -243,7 +586,7 @@ function createCodeBlockField(
 
       // Rebuild on selection change
       if (tr.selection) {
-        return buildCodeBlockDecorations(tr.state, options);
+        return buildFn(tr.state, options);
       }
 
       return deco;
@@ -252,11 +595,6 @@ function createCodeBlockField(
     provide: (f) => EditorView.decorations.from(f),
   });
 }
-
-// Cache StateField instance (temporarily disabled)
-// let cachedField: StateField<DecorationSet> | null = null;
-// let cachedOptions: Required<CodeBlockOptions> | null = null;
-// let cachedClickHandler: ReturnType<typeof createCodeBlockClickHandler> | null = null;
 
 /**
  * Code block plugin
@@ -276,6 +614,12 @@ function createCodeBlockField(
  *   lineNumbers: true,
  *   copyButton: true,
  *   defaultLanguage: 'javascript',
+ * })]
+ *
+ * // Inline mode (editable in-place)
+ * extensions: [codeBlockField({
+ *   interaction: 'inline',
+ *   copyButton: true,
  * })]
  * ```
  */
