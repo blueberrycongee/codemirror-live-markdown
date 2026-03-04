@@ -88,6 +88,34 @@ const user: User = { name: "Alice", age: 25 };
 Try editing the code above — your cursor stays in place and highlighting refreshes live.
 `;
 
+const codeAutoDoc = `# Code Block Auto Preview
+
+This editor uses \`codeBlockField()\` (auto mode, default).
+
+### How to try
+
+1. Code blocks are rendered with syntax highlighting by default.
+2. **Move your cursor into** a code block to see the raw Markdown source.
+3. **Move your cursor away** and the code block returns to rendered preview.
+
+\`\`\`javascript
+function sum(a, b) {
+  return a + b;
+}
+
+console.log(sum(2, 3));
+\`\`\`
+
+\`\`\`python
+def greet(name):
+    return f"Hello, {name}"
+
+print(greet("Lumina"))
+\`\`\`
+
+Try clicking inside a code block, then clicking outside — watch it toggle automatically.
+`;
+
 const codeToggleDoc = `# Code Block Toggle Preview
 
 This editor uses \`codeBlockEditorPlugin()\` (toggle mode).
@@ -343,6 +371,29 @@ const advancedView = new EditorView({
 });
 
 setupMouseSelecting(advancedView);
+
+const codeAutoState = EditorState.create({
+  doc: codeAutoDoc,
+  extensions: [
+    history(),
+    keymap.of([...defaultKeymap, ...historyKeymap]),
+    markdown({ base: markdownLanguage, extensions: [Table] }),
+    EditorView.lineWrapping,
+    collapseOnSelectionFacet.of(true),
+    mouseSelectingField,
+    livePreviewPlugin,
+    markdownStylePlugin,
+    codeBlockField(),
+    editorTheme,
+  ],
+});
+
+const codeAutoView = new EditorView({
+  state: codeAutoState,
+  parent: document.getElementById('editor-code-auto')!,
+});
+
+setupMouseSelecting(codeAutoView);
 
 const codeInlineState = EditorState.create({
   doc: codeInlineDoc,
