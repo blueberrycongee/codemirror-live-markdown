@@ -20,6 +20,7 @@ import {
   collapseOnSelectionFacet,
   editorTheme,
   setMouseSelecting,
+  initHighlighter,
 } from 'codemirror-live-markdown';
 
 // Initial document content
@@ -298,6 +299,10 @@ The core mechanism is the \`shouldShowSource()\` function that checks if the cur
 **Tip:** Try switching to "Source Mode" using the button above to see all the Markdown markers at once!
 `;
 
+// Initialize syntax highlighter then create editors
+(async () => {
+await initHighlighter();
+
 // Compartment for dynamic mode switching
 const modeCompartment = new Compartment();
 
@@ -478,3 +483,5 @@ basicSourceBtn.addEventListener('click', () => {
   basicSourceBtn.classList.add('active');
   basicLiveBtn.classList.remove('active');
 });
+
+})();
