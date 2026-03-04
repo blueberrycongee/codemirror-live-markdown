@@ -13,6 +13,7 @@ import {
   tableField,
   tableEditorPlugin,
   codeBlockEditorPlugin,
+  codeBlockField,
   imageField,
   linkPlugin,
   mouseSelectingField,
@@ -48,9 +49,48 @@ This editor uses the advanced table plugin.
 
 Edit cells directly in Live mode. Use the MD button to switch to source.`;
 
+const codeInlineDoc = `# Code Block Inline Editing
+
+This editor uses \`codeBlockField({ interaction: "inline" })\`.
+
+### How to try
+
+1. Code blocks show a **header** (language badge + Copy + MD) and **footer**.
+2. **Click inside the code** to place your cursor and edit directly.
+3. Syntax highlighting updates in real time as you type.
+4. Click **MD** to switch to full source mode (showing \\\`\\\`\\\` fences).
+5. Click **Code** to return to inline editing mode.
+
+\`\`\`javascript
+function sum(a, b) {
+  return a + b;
+}
+
+console.log(sum(2, 3));
+\`\`\`
+
+\`\`\`python
+def greet(name):
+    return f"Hello, {name}"
+
+print(greet("Lumina"))
+\`\`\`
+
+\`\`\`typescript
+interface User {
+  name: string;
+  age: number;
+}
+
+const user: User = { name: "Alice", age: 25 };
+\`\`\`
+
+Try editing the code above — your cursor stays in place and highlighting refreshes live.
+`;
+
 const codeToggleDoc = `# Code Block Toggle Preview
 
-This editor uses \`codeBlockEditorPlugin()\`.
+This editor uses \`codeBlockEditorPlugin()\` (toggle mode).
 
 ### How to try
 
@@ -303,6 +343,29 @@ const advancedView = new EditorView({
 });
 
 setupMouseSelecting(advancedView);
+
+const codeInlineState = EditorState.create({
+  doc: codeInlineDoc,
+  extensions: [
+    history(),
+    keymap.of([...defaultKeymap, ...historyKeymap]),
+    markdown({ base: markdownLanguage, extensions: [Table] }),
+    EditorView.lineWrapping,
+    collapseOnSelectionFacet.of(true),
+    mouseSelectingField,
+    livePreviewPlugin,
+    markdownStylePlugin,
+    codeBlockField({ interaction: 'inline', copyButton: true }),
+    editorTheme,
+  ],
+});
+
+const codeInlineView = new EditorView({
+  state: codeInlineState,
+  parent: document.getElementById('editor-code-inline')!,
+});
+
+setupMouseSelecting(codeInlineView);
 
 const codeToggleState = EditorState.create({
   doc: codeToggleDoc,
