@@ -340,13 +340,12 @@ function buildCodeBlockInlineDecorations(
       } else {
         // Render mode (inline): replace fences, keep code content editable
 
-        // Find the opening fence line range
         const openFenceLine = state.doc.lineAt(node.from);
-
-        // Find the closing fence line range
         const closeFenceLine = state.doc.lineAt(node.to);
 
-        // 1. Replace opening fence line with header widget
+        // 1. Replace opening fence line with header widget.
+        //    Use inclusiveEnd so the cursor cannot land between
+        //    the header and the first content line.
         const headerWidget = new CodeBlockHeaderWidget(
           language,
           code,
@@ -355,62 +354,23 @@ function buildCodeBlockInlineDecorations(
           options.copyButton
         );
         decorations.push(
-          Decoration.replace({ widget: headerWidget, block: true }).range(
-            openFenceLine.from,
-            openFenceLine.to
-          )
+          Decoration.replace({
+            widget: headerWidget,
+            block: true,
+            inclusiveEnd: true,
+          }).range(openFenceLine.from, openFenceLine.to)
         );
 
-        // 2. Line decorations for code content lines
-        if (codeText) {
-          for (let pos = codeText.from; pos <= codeText.to; ) {
-            const line = state.doc.lineAt(pos);
-            // Only add if this line is between fences (not the fence lines themselves)
-            if (line.from > openFenceLine.to && line.from < closeFenceLine.from) {
-              decorations.push(
-                Decoration.line({ class: 'cm-codeblock-content' }).range(
-                  line.from
-                )
-              );
-            } else if (line.from === codeText.from && line.from > openFenceLine.to) {
-              // First code line if it starts right after fence
-              decorations.push(
-                Decoration.line({ class: 'cm-codeblock-content' }).range(
-                  line.from
-                )
-              );
-            }
-            pos = line.to + 1;
-          }
-        }
-
-        // Also handle lines between open fence and close fence that aren't codeText
-        // (e.g., empty code blocks)
-        if (!codeText) {
-          // Empty code block: just header + footer, no content lines
-        } else {
-          // Make sure all lines between fences get the content class
-          const firstContentLine = state.doc.lineAt(openFenceLine.to + 1);
-          const lastContentLine = closeFenceLine.number > 1
-            ? state.doc.line(closeFenceLine.number - 1)
-            : null;
-
-          if (lastContentLine && firstContentLine.from <= lastContentLine.from) {
-            for (let lineNum = firstContentLine.number; lineNum <= lastContentLine.number; lineNum++) {
-              const line = state.doc.line(lineNum);
-              // Check we haven't already added this line
-              const alreadyAdded = decorations.some(
-                (d) => d.from === line.from && d.value.spec?.class === 'cm-codeblock-content'
-              );
-              if (!alreadyAdded) {
-                decorations.push(
-                  Decoration.line({ class: 'cm-codeblock-content' }).range(
-                    line.from
-                  )
-                );
-              }
-            }
-          }
+        // 2. Line decorations for every content line between fences
+        for (
+          let lineNum = openFenceLine.number + 1;
+          lineNum < closeFenceLine.number;
+          lineNum++
+        ) {
+          const line = state.doc.line(lineNum);
+          decorations.push(
+            Decoration.line({ class: 'cm-codeblock-content' }).range(line.from)
+          );
         }
 
         // 3. Mark decorations for syntax highlighting (from hast)
@@ -419,7 +379,6 @@ function buildCodeBlockInlineDecorations(
           if (hast) {
             const marks = hastToMarkDecorations(hast as HastNode, codeText.from);
             for (const mark of marks) {
-              // Ensure mark is within document bounds
               if (mark.from >= 0 && mark.to <= state.doc.length) {
                 decorations.push(mark);
               }
@@ -427,13 +386,16 @@ function buildCodeBlockInlineDecorations(
           }
         }
 
-        // 4. Replace closing fence line with footer widget
+        // 4. Replace closing fence line with footer widget.
+        //    Use inclusiveStart so the cursor cannot land between
+        //    the last content line and the footer.
         const footerWidget = new CodeBlockFooterWidget();
         decorations.push(
-          Decoration.replace({ widget: footerWidget, block: true }).range(
-            closeFenceLine.from,
-            closeFenceLine.to
-          )
+          Decoration.replace({
+            widget: footerWidget,
+            block: true,
+            inclusiveStart: true,
+          }).range(closeFenceLine.from, closeFenceLine.to)
         );
       }
     },
