@@ -241,6 +241,30 @@ export function registerLanguage(name: string, syntax: LanguageFn): void {
 }
 
 /**
+ * Highlight code and return raw HAST tree (for mark decorations)
+ *
+ * @param code - Source code
+ * @param lang - Language identifier
+ * @returns HAST root node, or null if highlighting unavailable
+ */
+export function highlightCodeHast(code: string, lang?: string): any | null {
+  if (!code) return null;
+  if (!initLowlightSync()) return null;
+
+  try {
+    if (lang && lowlightInstance.registered(lang)) {
+      return lowlightInstance.highlight(lang, code);
+    }
+    if (!lang) {
+      return lowlightInstance.highlightAuto(code);
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Check if a language is registered
  *
  * @param name - Language name
