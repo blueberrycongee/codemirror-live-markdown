@@ -12,7 +12,7 @@
  */
 
 import { syntaxTree } from '@codemirror/language';
-import { EditorState, Range, StateField } from '@codemirror/state';
+import { EditorState, Prec, Range, StateField } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView, WidgetType } from '@codemirror/view';
 import { shouldShowSource } from '../core/shouldShowSource';
 import { mouseSelectingField } from '../core/mouseSelecting';
@@ -585,12 +585,33 @@ function createCodeBlockField(
  * })]
  * ```
  */
+/**
+ * drawSelection() hides native ::selection on all .cm-line elements using
+ * Prec.highest.  In inline mode the code-block content lines have an opaque
+ * background that also covers drawSelection's selectionLayer (z-index:-1).
+ * Re-enable native ::selection specifically for .cm-codeblock-content using
+ * Prec.highest + higher CSS specificity so selection is visible again.
+ */
+const inlineSelectionFix = Prec.highest(
+  EditorView.theme({
+    '.cm-line.cm-codeblock-content': {
+      '&::selection, & ::selection': {
+        backgroundColor: 'Highlight !important',
+      },
+    },
+  }),
+);
+
 export function codeBlockField(options?: CodeBlockOptions) {
   const mergedOptions = { ...defaultOptions, ...options };
 
   const field = createCodeBlockField(mergedOptions);
 
-  return [codeBlockSourceModeField, field];
+  const extensions = [codeBlockSourceModeField, field];
+  if (mergedOptions.interaction === 'inline') {
+    extensions.push(inlineSelectionFix);
+  }
+  return extensions;
 }
 
 export function codeBlockEditorPlugin(options?: CodeBlockEditorOptions) {
