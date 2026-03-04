@@ -591,12 +591,17 @@ function createCodeBlockField(
  * background that also covers drawSelection's selectionLayer (z-index:-1).
  * Re-enable native ::selection specifically for .cm-codeblock-content using
  * Prec.highest + higher CSS specificity so selection is visible again.
+ *
+ * Uses an explicit RGBA color instead of the 'Highlight' CSS system keyword
+ * because Tauri/WebKit may not resolve 'Highlight' to a visible color.
+ * Consumers can override via --cm-codeblock-selection CSS custom property.
  */
 const inlineSelectionFix = Prec.highest(
   EditorView.theme({
     '.cm-line.cm-codeblock-content': {
       '&::selection, & ::selection': {
-        backgroundColor: 'Highlight !important',
+        backgroundColor:
+          'var(--cm-codeblock-selection, rgba(128, 188, 254, 0.4)) !important',
       },
     },
   }),
