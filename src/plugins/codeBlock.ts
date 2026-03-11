@@ -12,7 +12,7 @@
  */
 
 import { syntaxTree } from '@codemirror/language';
-import { EditorState, Range, StateField } from '@codemirror/state';
+import { EditorState, Extension, Range, StateField } from '@codemirror/state';
 import {
   Decoration,
   DecorationSet,
@@ -680,12 +680,12 @@ const codeBlockSelectionTheme = EditorView.theme({
   },
 });
 
-export function codeBlockField(options?: CodeBlockOptions) {
+export function codeBlockField(options?: CodeBlockOptions): Extension {
   const mergedOptions = { ...defaultOptions, ...options };
 
   const field = createCodeBlockField(mergedOptions);
 
-  const extensions = [codeBlockSourceModeField, field];
+  const extensions: Extension[] = [codeBlockSourceModeField, field];
   if (mergedOptions.interaction === 'inline') {
     extensions.push(codeBlockSelectionPlugin, codeBlockSelectionTheme);
   }
